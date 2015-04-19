@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 
+# Use this if there is no X-Server availible, e.g. this script runs on a cluster 
+import matplotlib as mpl
+mpl.use('Agg')
+
 from mpl_toolkits.basemap import Basemap
 
 """
