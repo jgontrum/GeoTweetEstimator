@@ -12,6 +12,7 @@ import numpy as np
 """ DEFINE CONSTANTS """
 # There must be at least that many occurrences of a token
 COUNT_THRESHOLD = 2
+VARIANCE_THRESHOLD = float('inf')
 """ ---------------- """
 
 if len(sys.argv) != 2:
@@ -54,7 +55,7 @@ for token, coordinates_of_tuple in token_distribution.iteritems():
 
         # Calculate the variance
         variance = variance_num / count
-        if variance < 1:
+        if variance < VARIANCE_THRESHOLD:
             coordinates_to_draw.append((mean_lon,mean_lon))
 
 
