@@ -11,8 +11,8 @@ import numpy as np
 
 """ DEFINE CONSTANTS """
 # There must be at least that many occurrences of a token
-COUNT_THRESHOLD = 2
-VARIANCE_THRESHOLD = float('inf')
+COUNT_THRESHOLD = 1
+VARIANCE_THRESHOLD = 2  #float('inf')
 """ ---------------- """
 
 if len(sys.argv) != 2:
@@ -47,16 +47,16 @@ for token, coordinates_of_tuple in token_distribution.iteritems():
         np_list = np.asarray(coordinates_of_tuple, dtype=float)
 
         # Calculate the mean values for
-        (mean_lon, mean_lon) = tuple(np.mean(np_list, axis=0))
+        (mean_lon, mean_lat) = tuple(np.mean(np_list, axis=0))
 
         variance_num = 0
         for (point_lon, point_lat) in coordinates_of_tuple:
-            variance_num += (point_lon - mean_lon)**2 + (longitude_factor*(point_lat - mean_lon))**2
+            variance_num += (point_lon - mean_lon)**2 + (longitude_factor*(point_lat - mean_lat))**2
 
         # Calculate the variance
         variance = variance_num / count
         if variance < VARIANCE_THRESHOLD:
-            coordinates_to_draw.append((mean_lon,mean_lon))
+            coordinates_to_draw.append((mean_lon,mean_lat))
 
 
 # Draw coordinates to the map:
