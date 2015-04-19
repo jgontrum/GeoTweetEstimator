@@ -7,6 +7,11 @@ from Wrapper import MySQLConnection
 from Wrapper import MapFunctions
 import matplotlib.pyplot as plt
 
+"""
+Draws the coordinates of tweets on a map.
+Demonstrates how the wrappers can be used.
+"""
+
 # Make connection
 database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="DEV")
 
