@@ -3,7 +3,6 @@
 __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 
 import os
-import sys
 from Wrapper import MySQLConnection
 from Evaluation import CorpusEvaluator
 import numpy as np
@@ -13,9 +12,6 @@ import numpy as np
 COUNT_THRESHOLD = 2
 VARIANCE_THRESHOLD = float('inf')
 """ ---------------- """
-
-if len(sys.argv) != 2:
-    print "Specify the output path for the graph."
 
 """ PREPARE """
 # Make connection
@@ -59,7 +55,7 @@ for token, coordinates_of_tuple in token_distribution.iteritems():
 dev_corpus = CorpusEvaluator.CorpusEvaluator(corpus='DEV')
 dev_corpus.setData(token_to_data)
 
-thresholds = [1,10,100]
+thresholds = [2000,1700,1600]
 for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
     print dev_corpus.evaluateCorpus()

@@ -20,6 +20,7 @@ class CorpusEvaluator:
             self.tweets.append(tokens.split())
             self.location.append((lat, lon))
         self.n = len(self.tweets)
+        assert len(self.tweets) == len(self.location)
 
     def setData(self, data):
         self.data = data
@@ -37,8 +38,10 @@ class CorpusEvaluator:
         failed = 0
 
         for token in tokens:
+            #print token
             if token not in self.data:
                 failed += 1
+                #print 'not found', token
                 continue
             coordinates, variance, count = self.data[token]
 
@@ -47,18 +50,28 @@ class CorpusEvaluator:
                 lat_score += lat
                 lon_score += lon
             else:
+                #print 'threshold failed ' + str(variance)
                 failed += 1
+        
+        denumerator = float(len(tokens) - failed)
+        
+        #print "failed: ", failed , ' / ', len(tokens)
 
-        lat_score /= float(len(tokens) - failed)
-        lon_score /= float(len(tokens) - failed)
+        if denumerator == 0.0:
+            lon_score = 0
+            lat_score = 0
+        else:
+            lat_score /= float(len(tokens) - failed)
+            lon_score /= float(len(tokens) - failed)
 
         return self.getDistance(lon_score, lat_score, location[1], location[0])
 
     def evaluateCorpus(self):
         score = 0
-        for i in range(1,self.n + 1):
+        for i in range(1,self.n):
+            #print i
             current_score = self.evaluateTweet(self.tweets[i], self.location[i])
-            print current_score
             score += current_score
-
+            #print '==='
+            #raw_input('...')
         return score / float(self.n)
