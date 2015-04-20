@@ -58,8 +58,7 @@ class CorpusEvaluator:
         #print "failed: ", failed , ' / ', len(tokens)
 
         if denumerator == 0.0:
-            lon_score = 0
-            lat_score = 0
+            return None
         else:
             lat_score /= float(len(tokens) - failed)
             lon_score /= float(len(tokens) - failed)
@@ -68,10 +67,17 @@ class CorpusEvaluator:
 
     def evaluateCorpus(self):
         score = 0
+        valids = 0
+        invalids = 0
         for i in range(1,self.n):
             #print i
             current_score = self.evaluateTweet(self.tweets[i], self.location[i])
-            score += current_score
+            if current_score is None:
+                invalids += 1
+            else:
+                score += current_score
+                valids += 1
             #print '==='
             #raw_input('...')
-        return score / float(self.n)
+        print 'valid: ', valids, 'invalid: ', invalids
+        return score / float(valids)
