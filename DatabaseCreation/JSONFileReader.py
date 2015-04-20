@@ -34,10 +34,11 @@ for line in jsonFile:
                     continue
 
                 country = filter.getCountry(jsonTweet[u'geo'][u'coordinates'][0], jsonTweet[u'geo'][u'coordinates'][1])
+                
 
                 if country not in set(['DE', 'AT', 'CH']):
                     continue
-
+                
                 tokens_low = " ".join([x.lower() for x in tokens])
 
                 writer.writerow([
