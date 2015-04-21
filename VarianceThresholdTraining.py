@@ -46,16 +46,16 @@ if load_pickled is None:
             np_list = np.asarray(coordinates_of_tuple, dtype=float)
 
             # Calculate the mean values for
-            (mean_lon, mean_lon) = tuple(np.mean(np_list, axis=0))
+            (mean_lon, mean_lat) = tuple(np.mean(np_list, axis=0))
 
             variance_num = 0
             for (point_lon, point_lat) in coordinates_of_tuple:
-                variance_num += (point_lon - mean_lon)**2 + (longitude_factor*(point_lat - mean_lon))**2
+                variance_num += (point_lon - mean_lon)**2 + (longitude_factor*(point_lat - mean_lat))**2
 
             # Calculate the variance
             variance = variance_num / count
 
-            token_to_data[token] = ((mean_lon, mean_lon), variance, count)
+            token_to_data[token] = ((mean_lon, mean_lat), variance, count)
 
     pickle.dump(token_to_data, open('TokenToData.pickle', 'wb'))
 

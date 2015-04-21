@@ -34,8 +34,8 @@ class CorpusEvaluator:
         self.variance_threshold = threshold
 
     def evaluateTweet(self, tokens, location):
-        lat_score = 0
         lon_score = 0
+        lat_score = 0
         failed = 0
 
         for token in tokens:
@@ -47,7 +47,7 @@ class CorpusEvaluator:
             coordinates, variance, count = self.data[token]
 
             if variance < self.variance_threshold:
-                lat, lon = coordinates
+                lon, lat = coordinates
                 lat_score += lat
                 lon_score += lon
             else:
@@ -64,7 +64,7 @@ class CorpusEvaluator:
             lat_score /= float(len(tokens) - failed)
             lon_score /= float(len(tokens) - failed)
 
-        return self.getDistance(lon_score, lat_score, location[1], location[0])
+        return self.getDistance(lon_score, lat_score, location[0], location[1])
 
     def evaluateCorpus(self):
         score = 0
