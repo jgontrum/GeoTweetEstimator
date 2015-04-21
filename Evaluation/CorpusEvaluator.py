@@ -5,6 +5,7 @@ __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 import os
 import math
 from Wrapper import MySQLConnection
+from geopy.distance import vincenty
 
 class CorpusEvaluator:
     def __init__(self, corpus='DEV'):
@@ -27,7 +28,7 @@ class CorpusEvaluator:
 
     # calculate the eucleadian distance between two points
     def getDistance(self, lon1, lat1, lon2, lat2):
-        return math.sqrt(math.pow(lon1-lon2,2) + math.pow(lat1-lat2,2))
+        return vincenty((lat1, lon1), (lat2, lon2)).meters / 1000
 
     def setVarianceThreshold(self, threshold):
         self.variance_threshold = threshold
@@ -69,7 +70,7 @@ class CorpusEvaluator:
         score = 0
         valids = 0
         invalids = 0
-        for i in range(1,self.n):
+        for i in range(0,self.n):
             #print i
             current_score = self.evaluateTweet(self.tweets[i], self.location[i])
             if current_score is None:
@@ -80,4 +81,7 @@ class CorpusEvaluator:
             #print '==='
             #raw_input('...')
         print 'valid: ', valids, 'invalid: ', invalids
-        return score / float(valids)
+        if valids > 0:
+            return score / float(valids)
+        else:
+            return float('inf')
