@@ -6,6 +6,8 @@ import os
 import math
 from Wrapper import MySQLConnection
 from geopy.distance import vincenty
+from Wrapper import MapFunctions
+import matplotlib.pyplot as plt
 
 class CorpusEvaluator:
     def __init__(self, corpus='DEV'):
@@ -38,6 +40,9 @@ class CorpusEvaluator:
         lat_score = 0
         failed = 0
 
+        basemap = MapFunctions.prepareMap()
+        basemap.plot(location[0], location[1], 'r.', latlon=True)
+
         for token in tokens:
             #print token
             if token not in self.data:
@@ -50,6 +55,7 @@ class CorpusEvaluator:
                 lon, lat = coordinates
                 lat_score += lat
                 lon_score += lon
+                basemap.plot(lon, lat, 'b.', latlon=True)
             else:
                 #print 'threshold failed ' + str(variance)
                 failed += 1
@@ -64,13 +70,18 @@ class CorpusEvaluator:
             lat_score /= float(len(tokens) - failed)
             lon_score /= float(len(tokens) - failed)
 
+        basemap.plot(lon_score, lat_score, 'g.', latlon=True)
+        plt.savefig('img/tweet_' + str(self.i) + ".png", format='png')
+        plt.clf()
+
         return self.getDistance(lon_score, lat_score, location[0], location[1])
 
     def evaluateCorpus(self):
         score = 0
         valids = 0
         invalids = 0
-        for i in range(0,self.n):
+
+        for self.i in range(0,10):
             #print i
             current_score = self.evaluateTweet(self.tweets[i], self.location[i])
             if current_score is None:
