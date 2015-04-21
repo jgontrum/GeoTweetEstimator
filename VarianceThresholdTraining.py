@@ -30,7 +30,7 @@ if load_pickled is None:
     # Iterate over all tweets and split the tokenised texts.
     # Each token maps to a list of lon, lat tuples
     token_distribution = {}
-    for tokens, lat, lon in database.getRows("`tokenised`, `lat`, `long`"):
+    for tokens, lat, lon in database.getRows("`tokenised_low`, `lat`, `long`"):
         for token in tokens.split():
             token_distribution.setdefault(token, []).append((lon, lat))
 

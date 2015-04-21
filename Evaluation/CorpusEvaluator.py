@@ -17,7 +17,7 @@ class CorpusEvaluator:
 
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
 
-        for tokens, lat, lon in database.getRows("`tokenised`, `lat`, `long`"):
+        for tokens, lat, lon in database.getRows("`tokenised_low`, `lat`, `long`"):
             self.tweets.append(tokens.split())
             self.location.append((lat, lon))
         self.n = len(self.tweets)
