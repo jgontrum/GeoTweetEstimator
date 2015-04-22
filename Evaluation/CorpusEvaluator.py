@@ -16,6 +16,7 @@ class CorpusEvaluator:
         self.n = 0
         self.data = None
         self.variance_threshold = 0
+        self.distance_threshold = 0
 
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
 
@@ -35,6 +36,9 @@ class CorpusEvaluator:
     def setVarianceThreshold(self, threshold):
         self.variance_threshold = threshold
 
+    def setDistanceThreshold(self, threshold):
+        self.distance_threshold = threshold
+
     def evaluateTweet(self, tokens, location):
         lon_score = 0
         lat_score = 0
@@ -43,10 +47,8 @@ class CorpusEvaluator:
         basemap = MapFunctions.prepareMap()
 
         for token in tokens:
-            #print token
             if token not in self.data:
                 failed += 1
-                #print 'not found', token
                 continue
             coordinates, variance, count = self.data[token]
             
@@ -58,13 +60,11 @@ class CorpusEvaluator:
                 basemap.plot(lon, lat, 'b.', latlon=True)
 
             else:
-                #print 'threshold failed ' + str(variance)
                 failed += 1
                 basemap.plot(lon, lat, '.', latlon=True, color='lightgray')
         
         denumerator = float(len(tokens) - failed)
         
-        #print "failed: ", failed , ' / ', len(tokens)
 
         if denumerator == 0.0:
             plt.clf()
@@ -81,23 +81,32 @@ class CorpusEvaluator:
 
         return self.getDistance(lon_score, lat_score, location[0], location[1])
 
+    def evaluateDistance(self, distance):
+        return distance < self.distance_threshold
+
+
     def evaluateCorpus(self):
         score = 0
         valids = 0
         invalids = 0
 
+        matches = 0
+        mismatches = 0
+
         self.n = 3
         for self.i in range(0,self.n):
-            #print i
             current_score = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
             if current_score is None:
                 invalids += 1
             else:
                 score += current_score
+                if self.evaluateDistance(score):
+                    matches += 1
+                    mismatches += 1
                 valids += 1
-            #print '==='
-            #raw_input('...')
+
         print 'valid: ', valids, 'invalid: ', invalids
+        print 'match: ', matches, 'mismatches: ', mismatches, 'ratio: ', str(float(matches) / (matches + mismatches))
         if valids > 0:
             return score / float(valids)
         else:
