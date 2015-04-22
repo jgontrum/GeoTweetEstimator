@@ -21,7 +21,7 @@ class CorpusEvaluator:
 
         for tokens, lat, lon in database.getRows("`tokenised_low`, `lat`, `long`"):
             self.tweets.append(tokens.split())
-            self.location.append((lat, lon))
+            self.location.append((lon, lat))
         self.n = len(self.tweets)
         assert len(self.tweets) == len(self.location)
 
@@ -41,7 +41,6 @@ class CorpusEvaluator:
         failed = 0
 
         basemap = MapFunctions.prepareMap()
-        basemap.plot(location[0], location[1], 'r.', latlon=True)
 
         for token in tokens:
             #print token
@@ -50,26 +49,32 @@ class CorpusEvaluator:
                 #print 'not found', token
                 continue
             coordinates, variance, count = self.data[token]
+            
+            lon, lat = coordinates
+            lat_score += lat
+            lon_score += lon
 
             if variance < self.variance_threshold:
-                lon, lat = coordinates
-                lat_score += lat
-                lon_score += lon
                 basemap.plot(lon, lat, 'b.', latlon=True)
+
             else:
                 #print 'threshold failed ' + str(variance)
                 failed += 1
+                basemap.plot(lon, lat, '.', latlon=True, color='lightgray')
         
         denumerator = float(len(tokens) - failed)
         
         #print "failed: ", failed , ' / ', len(tokens)
 
         if denumerator == 0.0:
+            plt.clf()
             return None
         else:
             lat_score /= float(len(tokens) - failed)
             lon_score /= float(len(tokens) - failed)
-
+        
+        basemap.plot(location[0], location[1], 'r.', latlon=True)
+        
         basemap.plot(lon_score, lat_score, 'g.', latlon=True)
         plt.savefig('img/tweet_' + str(self.i) + ".png", format='png')
         plt.clf()
@@ -81,9 +86,10 @@ class CorpusEvaluator:
         valids = 0
         invalids = 0
 
-        for self.i in range(0,10):
+        self.n = 3
+        for self.i in range(0,self.n):
             #print i
-            current_score = self.evaluateTweet(self.tweets[i], self.location[i])
+            current_score = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
             if current_score is None:
                 invalids += 1
             else:
