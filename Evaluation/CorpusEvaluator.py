@@ -17,7 +17,7 @@ class CorpusEvaluator:
         self.data = None
         self.variance_threshold = 0
         self.distance_threshold = 0
-        self.draw = False
+        self.draw = True
 
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
 
@@ -32,8 +32,6 @@ class CorpusEvaluator:
 
     # calculate the eucleadian distance between two points
     def getDistance(self, lon1, lat1, lon2, lat2):
-        print lat1, lon1
-        print lat2, lon2
         return vincenty((lat1, lon1), (lat2, lon2)).meters / 1000
 
     def setVarianceThreshold(self, threshold):
@@ -55,22 +53,24 @@ class CorpusEvaluator:
                 failed += 1
                 continue
 
-            if self.draw:
-                coordinates, variance, count = self.data[token]
+            coordinates, variance, count = self.data[token]
             
             lon, lat = coordinates
 
             if variance < self.variance_threshold:
                 if self.draw:
-                    basemap.plot(lon, lat, 'b.', latlon=True)
+                    basemap.plot(lon, lat, 'b.', latlon=True, alpha=0.6)
+                    lonx, laty = basemap(lon, lat)
+                    plt.text(lonx + 10000, laty + 10000, str(round(variance,1)) + '|' + str(count), fontsize=8)
                 lat_score += lat
                 lon_score += lon
 
             else:
                 failed += 1
                 if self.draw:
-                    basemap.plot(lon, lat, '.', latlon=True, color='lightgray')
-        
+                    basemap.plot(lon, lat, '.', latlon=True, color='silver', alpha=0.7)
+                    lonx, laty = basemap(lon, lat)
+                    plt.text(lonx + 10000, laty + 10000, str(round(variance,1)) + '|' + str(count),color='silver', fontsize=8)
         denumerator = float(len(tokens) - failed)
 
         if denumerator == 0.0:
@@ -79,14 +79,20 @@ class CorpusEvaluator:
         else:
             lat_score = lat_score /  float(len(tokens) - failed)
             lon_score = lon_score / float(len(tokens) - failed)
-       
+        
+        
+        distance = self.getDistance(lon_score, lat_score, location[0], location[1])
+        
         if self.draw:
-            basemap.plot(location[0], location[1], 'r.', latlon=True)
-            basemap.plot(lon_score, lat_score, 'g.', latlon=True)
-            plt.savefig('img/tweet_' + str(self.i) + ".png", format='png')
+            basemap.plot(location[0], location[1], 'rx', latlon=True)
+            basemap.plot(lon_score, lat_score, 'gx', latlon=True)
+           
+            plt.text(10000,10000,'Distance: '+ str(round(distance,1)) + 'km') 
+
+            plt.savefig('img/tweet_' + str(self.variance_threshold) + "_" + str(self.i) + ".png", format='png')
             plt.clf()
 
-        return self.getDistance(lon_score, lat_score, location[0], location[1])
+        return distance
 
     def evaluateDistance(self, distance):
         return distance < self.distance_threshold
@@ -100,15 +106,14 @@ class CorpusEvaluator:
         matches = 0
         mismatches = 0
 
-        self.n = 3
+        #self.n = 3
         for self.i in range(0,self.n):
             current_score = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
             if current_score is None:
                 invalids += 1
             else:
                 score += current_score
-                print 'score:', score
-                if self.evaluateDistance(score):
+                if self.evaluateDistance(current_score):
                     matches += 1
                 else:
                     mismatches += 1
@@ -119,7 +124,6 @@ class CorpusEvaluator:
         if matches + mismatches > 0:
             print 'ratio: ', str(float(matches) / (matches + mismatches))
 
-        
         if valids > 0:
             return score / float(valids)
         else:
