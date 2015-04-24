@@ -8,6 +8,8 @@ from Wrapper import MySQLConnection
 from operator import itemgetter
 import cPickle as pickle
 import numpy as np
+import unicodecsv
+
 
 """ DEFINE CONSTANTS """
 # There must be at least that many occurrences of a token
@@ -63,14 +65,19 @@ else:
     token_to_data = pickle.load(open(load_pickled, 'rb'))
 """ ---------------- """
 
-sorted_by_variance = sorted(token_to_data.iteritems(),key=itemgetter(2))
+sorted_by_variance = sorted(token_to_data.iteritems(),key=lambda x: x[1][2] )
+
+outFile = 'var.csv'
+writer = unicodecsv.writer(open(outFile, 'wb'), delimiter=',', quotechar='"',escapechar='\\', quoting=unicodecsv.QUOTE_ALL, encoding='utf-8')
+for k,v in sorted_by_variance:
+    writer.writerow([k, v[1], v[2]])
 
 # sort by variance
 c = 10
-for token, location, variance, count in sorted_by_variance:
+for token, values in sorted_by_variance:
     if c > 0:
-        if count > 1000:
-            print token, variance, count
+        if values[1] > 20:
+            print token, values 
             c -= 1
     else:
         break
@@ -78,10 +85,10 @@ for token, location, variance, count in sorted_by_variance:
 print "---"
 
 c = 10
-for token, location, variance, count in  reversed(sorted_by_variance):
+for token, values in reversed(sorted_by_variance):
     if c > 0:
-        if count > 1000:
-            print token, variance, count
+        if values[1] < 1 and values[2] > 500:
+            print token, values
             c -= 1
     else:
         break

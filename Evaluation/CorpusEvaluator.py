@@ -17,7 +17,7 @@ class CorpusEvaluator:
         self.data = None
         self.variance_threshold = 0
         self.distance_threshold = 0
-        self.draw = True
+        self.draw = False
 
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
 

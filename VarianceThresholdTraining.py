@@ -11,7 +11,7 @@ import numpy as np
 
 """ DEFINE CONSTANTS """
 # There must be at least that many occurrences of a token
-COUNT_THRESHOLD = 2
+COUNT_THRESHOLD = 0
 VARIANCE_THRESHOLD = float('inf')
 """ ---------------- """
 
