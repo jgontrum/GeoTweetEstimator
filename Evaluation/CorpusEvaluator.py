@@ -59,18 +59,18 @@ class CorpusEvaluator:
 
             if variance < self.variance_threshold:
                 if self.draw:
-                    basemap.plot(lon, lat, 'b.', latlon=True, alpha=0.6)
+                    basemap.plot(lon, lat, 'o', latlon=True, color=self.getColorForValue(variance), alpha=1)
                     lonx, laty = basemap(lon, lat)
-                    plt.text(lonx + 10000, laty + 10000, str(round(variance,1)) + '|' + str(count), fontsize=8)
+                    # plt.text(lonx + 10000, laty + 10000, str(round(variance,1)) + '|' + str(count), fontsize=8)
                 lat_score += lat
                 lon_score += lon
 
             else:
                 failed += 1
                 if self.draw:
-                    basemap.plot(lon, lat, '.', latlon=True, color='silver', alpha=0.7)
+                    basemap.plot(lon, lat, 'o', latlon=True, color=self.getColorForValue(variance), alpha=0.3)
                     lonx, laty = basemap(lon, lat)
-                    plt.text(lonx + 10000, laty + 10000, str(round(variance,1)) + '|' + str(count),color='silver', fontsize=8)
+                    # plt.text(lonx + 10000, laty + 10000, str(round(variance,1)) + '|' + str(count),color='silver', fontsize=8)
         denumerator = float(len(tokens) - failed)
 
         if denumerator == 0.0:
@@ -97,6 +97,15 @@ class CorpusEvaluator:
     def evaluateDistance(self, distance):
         return distance < self.distance_threshold
 
+    def getColorForValue(self, variance):
+        t = 5.0
+        if variance > t:
+            return (1.0, 0 , 25.0/255.0)
+        r = (255.0 * float(variance) / t)
+        g = (255.0 * (t - float(variance)) / t)
+        b = 25.0
+        return (r/255.0, g/255.0, b/255.0)
+
 
     def evaluateCorpus(self):
         score = 0
@@ -106,7 +115,7 @@ class CorpusEvaluator:
         matches = 0
         mismatches = 0
 
-        #self.n = 3
+        self.n = 3
         for self.i in range(0,self.n):
             current_score = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
             if current_score is None:
