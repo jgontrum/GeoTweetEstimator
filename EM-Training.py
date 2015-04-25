@@ -24,19 +24,19 @@ change = 0
 
 for token,data in token_to_data.iteritems():
     tokens_to_coordinates[token] = data[0]
-    tokens_to_factor[token] = 1
+    tokens_to_factor[token] = 1.0
 
 for i in range(iterations):
-    dev_corpus.setDistanceThreshold(tokens_to_coordinates)
-    for token, problist in dev_corpus.expectationAll():
+    dev_corpus.setData(tokens_to_coordinates)
+    for token, problist in dev_corpus.expectationAll().iteritems():
         avg = sum(problist) / float(len(problist))
-        change += tokens_to_factor[token] - avg
+        change += (tokens_to_factor[token] - avg)   
 
         lon, lat = tokens_to_coordinates[token]
         lon *= avg
         lat *= avg
         tokens_to_coordinates[token] = (lon, lat)
-        tokens_to_factor = avg
+        tokens_to_factor[token] = avg
     print change
 
 

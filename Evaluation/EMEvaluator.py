@@ -56,4 +56,4 @@ class EMEvaluator:
             for token, prob in token_to_probs.iteritems():
                 token_to_problist.setdefault(token, []).append(prob)
 
-        return prob
+        return token_to_problist
