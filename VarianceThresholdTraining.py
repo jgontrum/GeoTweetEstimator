@@ -11,12 +11,12 @@ import numpy as np
 
 """ DEFINE CONSTANTS """
 # There must be at least that many occurrences of a token
-COUNT_THRESHOLD = 0
+COUNT_THRESHOLD = 1
 VARIANCE_THRESHOLD = float('inf')
 """ ---------------- """
 
 load_pickled = None
-if len(sys.argv) == 2:
+if len(sys.argv) >= 2:
     load_pickled = sys.argv[1]
 
 
@@ -69,8 +69,7 @@ dev_corpus.setDistanceThreshold(200)
 
 thresholds = [2000,1700,1600, 1400, 1200, 1000, 800 , 600, 500, 1 ]
 thresholds = range(1400, 1500, 10)
-thresholds = [ 9, 8, 7, 6, 5, 4, 3, 2, 1 ]
-thresholds = [ 2 ]
+thresholds = [ int(sys.argv[2]) ]
 for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
     print ""

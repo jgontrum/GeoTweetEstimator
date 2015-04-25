@@ -17,7 +17,7 @@ class CorpusEvaluator:
         self.data = None
         self.variance_threshold = 0
         self.distance_threshold = 0
-        self.draw = False
+        self.draw = True
 
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
 
@@ -48,9 +48,13 @@ class CorpusEvaluator:
         if self.draw:
             basemap = MapFunctions.prepareMap()
 
+        text_pos = 1890000
         for token in tokens:
             if token not in self.data:
                 failed += 1
+                if self.draw:
+                    plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | (fail)', color='grey', fontsize=6)
+                    text_pos -= 42000
                 continue
 
             coordinates, variance, count = self.data[token]
@@ -59,7 +63,11 @@ class CorpusEvaluator:
 
             if variance < self.variance_threshold:
                 if self.draw:
-                    basemap.plot(lon, lat, 'o', latlon=True, color=self.getColorForValue(variance), alpha=1)
+                    plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count), color='black', fontsize=6)
+                    text_pos -= 42000
+
+                    current_color = self.getColorForValue(variance)
+                    basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=self.getSizeForValue(count), alpha=0.7)
                     lonx, laty = basemap(lon, lat)
                     # plt.text(lonx + 10000, laty + 10000, str(round(variance,1)) + '|' + str(count), fontsize=8)
                 lat_score += lat
@@ -68,7 +76,11 @@ class CorpusEvaluator:
             else:
                 failed += 1
                 if self.draw:
-                    basemap.plot(lon, lat, 'o', latlon=True, color=self.getColorForValue(variance), alpha=0.3)
+                    plt.text(10000, text_pos,   token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count),color='grey', fontsize=6)
+                    text_pos -= 40000
+
+                    current_color = 'gray' 
+                    basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=self.getSizeForValue(count), alpha=0.1)
                     lonx, laty = basemap(lon, lat)
                     # plt.text(lonx + 10000, laty + 10000, str(round(variance,1)) + '|' + str(count),color='silver', fontsize=8)
         denumerator = float(len(tokens) - failed)
@@ -84,11 +96,11 @@ class CorpusEvaluator:
         distance = self.getDistance(lon_score, lat_score, location[0], location[1])
         
         if self.draw:
-            basemap.plot(location[0], location[1], 'rx', latlon=True)
-            basemap.plot(lon_score, lat_score, 'gx', latlon=True)
+            basemap.plot(location[0], location[1], '^', mfc='none' , markeredgecolor='black', latlon=True, alpha=1)
+            basemap.plot(lon_score, lat_score, 'v',  mfc='none',  markeredgecolor='black', latlon=True, alpha=1)
            
-            plt.text(10000,10000,'Distance: '+ str(round(distance,1)) + 'km') 
-
+            plt.text(10000,10000,'Distance: '+ str(round(distance,1)) + 'km')
+            plt.text(10000,80000, 'Threshold: ' + str(self.variance_threshold))
             plt.savefig('img/tweet_' + str(self.variance_threshold) + "_" + str(self.i) + ".png", format='png')
             plt.clf()
 
@@ -98,7 +110,7 @@ class CorpusEvaluator:
         return distance < self.distance_threshold
 
     def getColorForValue(self, variance):
-        t = 5.0
+        t = 8.0
         if variance > t:
             return (1.0, 0 , 25.0/255.0)
         r = (255.0 * float(variance) / t)
@@ -106,6 +118,16 @@ class CorpusEvaluator:
         b = 25.0
         return (r/255.0, g/255.0, b/255.0)
 
+    def getSizeForValue(self, count):
+        t = 1000.0
+        max_s = 70
+        min_s = 5 
+        if count > t:
+            return max_s
+        size = float(count) / t * max_s
+        if size < min_s:
+            size = min_s
+        return size    
 
     def evaluateCorpus(self):
         score = 0
@@ -115,7 +137,7 @@ class CorpusEvaluator:
         matches = 0
         mismatches = 0
 
-        self.n = 3
+        #self.n = 3
         for self.i in range(0,self.n):
             current_score = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
             if current_score is None:
