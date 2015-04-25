@@ -27,17 +27,13 @@ for token,data in token_to_data.iteritems():
     tokens_to_factor[token] = 1.0
 
 for i in range(iterations):
-    dev_corpus.setData(tokens_to_coordinates)
+    dev_corpus.setData((tokens_to_coordinates,tokens_to_factor))
     score, data = dev_corpus.expectationAll()
     print i, score
     for token, problist in data.iteritems():
         avg = sum(problist) / float(len(problist))
         change += (tokens_to_factor[token] - avg)   
 
-        lon, lat = tokens_to_coordinates[token]
-        lon *= avg
-        lat *= avg
-        tokens_to_coordinates[token] = (lon, lat)
         tokens_to_factor[token] = avg
     print change
 
