@@ -12,6 +12,7 @@ class EMEvaluator:
         self.location = [] # list of lat, lan tuples
         self.n = 0
         self.token_to_coordinates = None
+        self.token_to_coordinates = None
         self.draw = True
 
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
@@ -22,8 +23,9 @@ class EMEvaluator:
         self.n = len(self.tweets)
         assert len(self.tweets) == len(self.location)
 
-    def setData(self, data):
-        self.token_to_coordinates = data
+    def setData(self, token_to_coordinates, token_to_factor):
+        self.token_to_coordinates = token_to_coordinates
+        self.token_to_factor = token_to_factor
 
     # calculate the distance between two points
     def getDistance(self, lon1, lat1, lon2, lat2):
@@ -40,6 +42,14 @@ class EMEvaluator:
         lat_score = 0
         failed = 0
 
+        token_to_rate = {}
+        for token in tokens:
+            if token not in self.token_to_coordinates:
+                continue
+            token_to_rate[token] = self.token_to_factor[token]
+
+        summed = sum(token_to_rate.values())
+
         for token in tokens:
             if token not in self.token_to_coordinates:
                 failed += 1
@@ -47,8 +57,10 @@ class EMEvaluator:
 
             lon, lat = self.token_to_coordinates[token]
 
-            lat_score += lat
-            lon_score += lon
+            rate = token_to_rate[token] / float(summed)
+
+            lat_score += lat * rate
+            lon_score += lon * rate
 
             distance = self.getDistance(lon, lat, real_lon, real_lat)
             token_to_probability[token] = self.getProbability(distance)
