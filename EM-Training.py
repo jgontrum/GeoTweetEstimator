@@ -28,7 +28,9 @@ for token,data in token_to_data.iteritems():
 
 for i in range(iterations):
     dev_corpus.setData(tokens_to_coordinates)
-    for token, problist in dev_corpus.expectationAll().iteritems():
+    score, data = dev_corpus.expectationAll()
+    print i, score
+    for token, problist in data.iteritems():
         avg = sum(problist) / float(len(problist))
         change += (tokens_to_factor[token] - avg)   
 

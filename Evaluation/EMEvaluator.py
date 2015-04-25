@@ -36,24 +36,54 @@ class EMEvaluator:
         real_lon, real_lat = location
         token_to_probability = {}
 
+        lon_score = 0
+        lat_score = 0
+        failed = 0
+
         for token in tokens:
             if token not in self.token_to_coordinates:
+                failed += 1
                 continue
 
             lon, lat = self.token_to_coordinates[token]
 
+            lat_score += lat
+            lon_score += lon
+
             distance = self.getDistance(lon, lat, real_lon, real_lat)
             token_to_probability[token] = self.getProbability(distance)
 
-        return token_to_probability
+        denumerator = float(len(tokens) - failed)
+        score = None
+        if denumerator > 0.0:
+            lat_score = lat_score /  float(len(tokens) - failed)
+            lon_score = lon_score / float(len(tokens) - failed)
+            score = self.getDistance(lon_score, lat_score, location[0], location[1])
+
+        return (score, token_to_probability)
 
     def expectationAll(self):
+        invalids = 0
+        valids = 0
+        score = 0
+
         #self.n = 3
         token_to_problist = {}
 
         for self.i in range(0,self.n):
             token_to_probs = self.expectation(self.tweets[self.i], self.location[self.i])
-            for token, prob in token_to_probs.iteritems():
+            for token, data in token_to_probs.iteritems():
+                distance, prob = data
+
+                if distance is None:
+                    invalids += 1
+                else:
+                    valids += 1
+                    score += distance
+
                 token_to_problist.setdefault(token, []).append(prob)
 
-        return token_to_problist
+        if valids > 0:
+            return (score / float(valids, token_to_problist))
+        else:
+            return (float('inf'), token_to_problist)
