@@ -34,6 +34,15 @@ class EMEvaluator:
     def getProbability(self, distance):
         return (600.0 - distance) / 600.0
 
+    def getWeightedPosition(self,  lon1, lat1, lon2, lat2, x):
+        ya = 1 - x
+        yb = x
+
+        newlat = (lat1 * ya + lat2 * yb) / (lat1 + lat2)
+        newlon = (lon1 * ya + lon2 * yb) / (lon1 + lon2)
+
+        return (newlon, newlat)
+
     def expectation(self, tokens, location):
         real_lon, real_lat = location
         token_to_probability = {}
@@ -57,10 +66,19 @@ class EMEvaluator:
 
             lon, lat = self.token_to_coordinates[token]
 
-            rate = token_to_rate[token] #/ float(summed)
+            rate = token_to_rate[token] / float(summed)
 
-            lat_score += lat * rate
-            lon_score += lon * rate
+            weighted_lon, weighted_lat  = self.getWeightedPosition(real_lon, real_lat, lon, lat, rate)
+
+            lat_score += weighted_lat
+            lon_score += weighted_lon
+
+            print "~~~~~~~~~~"
+            print "Rate: " + str(rate)
+            print "Real: " + str(location)
+            print "Tok:  " + str(self.token_to_coordinates[token])
+            print "Calculated: " + str((weighted_lon, weighted_lat))
+            print ""
 
             distance = self.getDistance(lon, lat, real_lon, real_lat)
             token_to_probability[token] = self.getProbability(distance)
