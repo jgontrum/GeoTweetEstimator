@@ -27,7 +27,7 @@ for token,data in token_to_data.iteritems():
     tokens_to_factor[token] = 1.0
 
 for i in range(iterations):
-    dev_corpus.setData((tokens_to_coordinates,tokens_to_factor))
+    dev_corpus.setData(tokens_to_coordinates,tokens_to_factor)
     score, data = dev_corpus.expectationAll()
     print i, score
     for token, problist in data.iteritems():

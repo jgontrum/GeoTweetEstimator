@@ -57,7 +57,7 @@ class EMEvaluator:
 
             lon, lat = self.token_to_coordinates[token]
 
-            rate = token_to_rate[token] / float(summed)
+            rate = token_to_rate[token] #/ float(summed)
 
             lat_score += lat * rate
             lon_score += lon * rate
@@ -83,19 +83,18 @@ class EMEvaluator:
         token_to_problist = {}
 
         for self.i in range(0,self.n):
-            token_to_probs = self.expectation(self.tweets[self.i], self.location[self.i])
+            distance, token_to_probs = self.expectation(self.tweets[self.i], self.location[self.i])
+            
+            if distance is None:
+                invalids += 1
+            else:
+                valids += 1
+                score += distance
+
             for token, data in token_to_probs.iteritems():
-                distance, prob = data
-
-                if distance is None:
-                    invalids += 1
-                else:
-                    valids += 1
-                    score += distance
-
-                token_to_problist.setdefault(token, []).append(prob)
+                token_to_problist.setdefault(token, []).append(data)
 
         if valids > 0:
-            return (score / float(valids, token_to_problist))
+            return (score / float(valids), token_to_problist)
         else:
             return (float('inf'), token_to_problist)
