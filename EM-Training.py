@@ -5,6 +5,7 @@ __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 import sys
 import cPickle as pickle
 from Evaluation import EMEvaluator
+from Evaluation import CorpusEvaluator
 
 load_pickled = None
 if len(sys.argv) >= 2:
@@ -38,4 +39,13 @@ for i in range(iterations):
     print change
     change = 0
 
+dev_corpus_eval = CorpusEvaluator.CorpusEvaluator(corpus='DEV')
+dev_corpus_eval.setData(token_to_data, tokens_to_factor)
+dev_corpus_eval.setDistanceThreshold(200)
+
+threshold = 5
+dev_corpus.setVarianceThreshold(threshold)
+print ""
+print threshold
+print dev_corpus.evaluateCorpus()
 
