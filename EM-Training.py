@@ -36,7 +36,6 @@ for i in range(iterations):
 
         tokens_to_factor[token] = avg
     print change
-
-
+    change = 0
 
 
