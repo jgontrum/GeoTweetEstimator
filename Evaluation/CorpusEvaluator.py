@@ -3,11 +3,10 @@
 __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 
 import os
-import math
 from Wrapper import MySQLConnection
-from geopy.distance import vincenty
 from Wrapper import MapFunctions
 import matplotlib.pyplot as plt
+from Evaluation import EvaluationFunctions
 
 class CorpusEvaluator:
     def __init__(self, corpus='DEV'):
@@ -15,9 +14,10 @@ class CorpusEvaluator:
         self.location = [] # list of lat, lan tuples
         self.n = 0
         self.data = None
+        self.token_to_factor = None
         self.variance_threshold = 0
         self.distance_threshold = 0
-        self.draw = True
+        self.draw = False
 
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
 
@@ -27,12 +27,9 @@ class CorpusEvaluator:
         self.n = len(self.tweets)
         assert len(self.tweets) == len(self.location)
 
-    def setData(self, data):
+    def setData(self, data, token_to_factor):
         self.data = data
-
-    # calculate the eucleadian distance between two points
-    def getDistance(self, lon1, lat1, lon2, lat2):
-        return vincenty((lat1, lon1), (lat2, lon2)).meters / 1000
+        self.token_to_factor = token_to_factor
 
     def setVarianceThreshold(self, threshold):
         self.variance_threshold = threshold
@@ -41,8 +38,8 @@ class CorpusEvaluator:
         self.distance_threshold = threshold
 
     def evaluateTweet(self, tokens, location):
-        lon_score = 0
-        lat_score = 0
+        coordinate_list = []
+        weight_list = []
         failed = 0
         
         if self.draw:
@@ -60,40 +57,37 @@ class CorpusEvaluator:
             coordinates, variance, count = self.data[token]
             
             lon, lat = coordinates
+            weight = self.token_to_factor[token]
+
+            # Update lon, lat values:
+            #lon, lat = EvaluationFunctions.getWeightedPosition()
 
             if variance < self.variance_threshold:
                 if self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count), color='black', fontsize=6)
                     text_pos -= 42000
+                    current_color = EvaluationFunctions.getColorForValue(variance)
+                    basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.7)
 
-                    current_color = self.getColorForValue(variance)
-                    basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=self.getSizeForValue(count), alpha=0.7)
-                    lonx, laty = basemap(lon, lat)
-                    # plt.text(lonx + 10000, laty + 10000, str(round(variance,1)) + '|' + str(count), fontsize=8)
-                lat_score += lat
-                lon_score += lon
+                coordinate_list.append(coordinates)
+                weight_list.append(weight)
 
             else:
                 failed += 1
                 if self.draw:
                     plt.text(10000, text_pos,   token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count),color='grey', fontsize=6)
                     text_pos -= 40000
-
                     current_color = 'gray' 
-                    basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=self.getSizeForValue(count), alpha=0.1)
-                    lonx, laty = basemap(lon, lat)
-                    # plt.text(lonx + 10000, laty + 10000, str(round(variance,1)) + '|' + str(count),color='silver', fontsize=8)
+                    basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.1)
         denumerator = float(len(tokens) - failed)
 
         if denumerator == 0.0:
             plt.clf()
             return None
-        else:
-            lat_score = lat_score /  float(len(tokens) - failed)
-            lon_score = lon_score / float(len(tokens) - failed)
-        
-        
-        distance = self.getDistance(lon_score, lat_score, location[0], location[1])
+
+        lon_score, lat_score = EvaluationFunctions.getWeightedMidpoint(coordinate_list, weight_list)
+
+        distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
         
         if self.draw:
             basemap.plot(location[0], location[1], '^', mfc='none' , markeredgecolor='black', latlon=True, alpha=1)
@@ -106,28 +100,6 @@ class CorpusEvaluator:
 
         return distance
 
-    def evaluateDistance(self, distance):
-        return distance < self.distance_threshold
-
-    def getColorForValue(self, variance):
-        t = 8.0
-        if variance > t:
-            return (1.0, 0 , 25.0/255.0)
-        r = (255.0 * float(variance) / t)
-        g = (255.0 * (t - float(variance)) / t)
-        b = 25.0
-        return (r/255.0, g/255.0, b/255.0)
-
-    def getSizeForValue(self, count):
-        t = 1000.0
-        max_s = 70
-        min_s = 5 
-        if count > t:
-            return max_s
-        size = float(count) / t * max_s
-        if size < min_s:
-            size = min_s
-        return size    
 
     def evaluateCorpus(self):
         score = 0
@@ -144,7 +116,7 @@ class CorpusEvaluator:
                 invalids += 1
             else:
                 score += current_score
-                if self.evaluateDistance(current_score):
+                if EvaluationFunctions.evaluateDistance(current_score):
                     matches += 1
                 else:
                     mismatches += 1

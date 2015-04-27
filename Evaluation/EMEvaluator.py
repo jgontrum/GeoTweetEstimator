@@ -4,7 +4,7 @@ __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 
 import os
 from Wrapper import MySQLConnection
-from geopy.distance import vincenty
+from Evaluation import EvaluationFunctions
 
 class EMEvaluator:
     def __init__(self, corpus='DEV'):
@@ -27,27 +27,8 @@ class EMEvaluator:
         self.token_to_coordinates = token_to_coordinates
         self.token_to_factor = token_to_factor
 
-    # calculate the distance between two points
-    def getDistance(self, lon1, lat1, lon2, lat2):
-        return vincenty((lat1, lon1), (lat2, lon2)).meters / 1000
-
     def getProbability(self, distance):
         return (500.0 - distance) / 500.0
-
-    def getWeightedPosition(self,  lon1, lat1, lon2, lat2, x):
-        # ya = 1 - x
-        # yb = x
-        # newlat =  (lat1 * ya + lat2 * yb) / (lat1 + lat2)
-        # newlon =  (lon1 * ya + lon2 * yb) / (lon1 + lon2)
-        #
-        # New approach:
-        distance_lon = lon2 - lon1
-        newlon = lon1 + (distance_lon * x)
-
-        distance_lat = lat2 - lat1
-        newlat = lat1 + (distance_lat * x)
-        
-        return (newlon, newlat)
 
     def expectation(self, tokens, location):
         real_lon, real_lat = location
@@ -74,7 +55,7 @@ class EMEvaluator:
 
             rate = token_to_rate[token]# / float(summed)
 
-            weighted_lon, weighted_lat  = self.getWeightedPosition(real_lon, real_lat, lon, lat, rate)
+            weighted_lon, weighted_lat  = EvaluationFunctions.getWeightedPosition(real_lon, real_lat, lon, lat, rate)
 
             lat_score += weighted_lat
             lon_score += weighted_lon
@@ -86,7 +67,7 @@ class EMEvaluator:
             print "Calculated: " + str((weighted_lon, weighted_lat))
             print ""
             """
-            distance = self.getDistance(lon, lat, real_lon, real_lat)
+            distance = EvaluationFunctions.getDistance(lon, lat, real_lon, real_lat)
             token_to_probability[token] = self.getProbability(distance)
             #print "new prob: " + str(self.getProbability(distance))
 
@@ -95,7 +76,7 @@ class EMEvaluator:
         if denumerator > 0.0:
             lat_score = lat_score / denumerator
             lon_score = lon_score / denumerator 
-            score = self.getDistance(lon_score, lat_score, location[0], location[1])
+            score = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
 
         return (score, token_to_probability)
 
