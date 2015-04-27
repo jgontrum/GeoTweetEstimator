@@ -109,14 +109,14 @@ class CorpusEvaluator:
         matches = 0
         mismatches = 0
 
-        #self.n = 3
+       # self.n = 3
         for self.i in range(0,self.n):
             current_score = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
             if current_score is None:
                 invalids += 1
             else:
                 score += current_score
-                if EvaluationFunctions.evaluateDistance(current_score):
+                if EvaluationFunctions.evaluateDistance(current_score, self.distance_threshold):
                     matches += 1
                 else:
                     mismatches += 1
