@@ -72,7 +72,9 @@ class CorpusEvaluator:
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.7)
 
                 coordinate_list.append(coordinates)
-                weight_list.append(weight)
+                if variance == 0:
+                    variance = 0.0000000000000000001
+                weight_list.append(1/variance)
 
             else:
                 failed += 1
