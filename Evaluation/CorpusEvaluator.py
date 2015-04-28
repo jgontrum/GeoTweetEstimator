@@ -15,6 +15,7 @@ class CorpusEvaluator:
         self.n = 0
         self.data = None
         self.token_to_factor = None
+        self.cluster = None
         self.variance_threshold = 0
         self.distance_threshold = 0
         self.draw = False
@@ -27,9 +28,10 @@ class CorpusEvaluator:
         self.n = len(self.tweets)
         assert len(self.tweets) == len(self.location)
 
-    def setData(self, data, token_to_factor):
+    def setData(self, data, token_to_factor, clusters):
         self.data = data
         self.token_to_factor = token_to_factor
+        self.cluster = clusters
 
     def setVarianceThreshold(self, threshold):
         self.variance_threshold = threshold
@@ -98,36 +100,54 @@ class CorpusEvaluator:
             plt.savefig('img/tweet_' + str(self.variance_threshold) + "_" + str(self.i) + ".png", format='png')
             plt.clf()
 
-        return distance
+        return (lon_score, lat_score, location[0], location[1], distance)
 
 
     def evaluateCorpus(self):
-        score = 0
+        distance_score = 0
         valids = 0
         invalids = 0
 
-        matches = 0
-        mismatches = 0
+        distance_matches = 0
+        distance_mismatches = 0
+
+        cluster_matches = 0
+        cluster_mismatches = 0
 
        # self.n = 3
         for self.i in range(0,self.n):
-            current_score = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
-            if current_score is None:
+            values = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
+            if values is None:
                 invalids += 1
             else:
-                score += current_score
-                if EvaluationFunctions.evaluateDistance(current_score, self.distance_threshold):
-                    matches += 1
+                lon_calculated, lat_calculated, lon_real, lat_real, distance = values
+                distance_score += distance
+
+                if EvaluationFunctions.evaluateDistance(distance, self.distance_threshold):
+                    distance_matches += 1
                 else:
-                    mismatches += 1
+                    distance_mismatches += 1
+
+                if EvaluationFunctions.evaluateCluster(lon_calculated, lat_calculated, lon_real, lat_real, self.clusters):
+                    cluster_matches += 1
+                else:
+                    cluster_mismatches += 1
+
                 valids += 1
 
         print 'valid: ', valids, 'invalid: ', invalids
-        print 'match: ', matches, 'mismatches: ', mismatches
-        if matches + mismatches > 0:
-            print 'ratio: ', str(float(matches) / (matches + mismatches))
+
+        print 'distance_match: ', distance_matches, 'distance_mismatches: ', distance_mismatches
+        if distance_matches + distance_mismatches > 0:
+            print 'distance_ratio: ', str(float(distance_matches) / (distance_matches + distance_mismatches))
+
+        print 'cluster_matches: ', cluster_matches, 'cluster_mismatches: ', cluster_mismatches
+        if cluster_matches + cluster_mismatches > 0:
+            print 'cluster_ratio: ', str(float(cluster_matches) / (cluster_matches + cluster_mismatches))
+
 
         if valids > 0:
-            return score / float(valids)
+            return  distance_score / float(valids)
         else:
-            return float('inf')
+            return  float('inf')
+

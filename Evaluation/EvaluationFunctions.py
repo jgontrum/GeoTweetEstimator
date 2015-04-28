@@ -20,6 +20,12 @@ def getDistance(lon1, lat1, lon2, lat2):
 def evaluateDistance(distance, distance_threshold):
         return distance < distance_threshold
 
+def evaluateCluster(lon1, lat1, lon2, lat2, clusters):
+    cluster1 = getCluster(lon1, lat1, clusters)
+    cluster2 = getCluster(lon2, lat2, clusters)
+    return cluster1 == cluster2
+
+
 # Return a color for a variance value
 def getColorForValue(variance):
     t = 8.0
@@ -74,3 +80,16 @@ def getWeightedMidpoint(coordinates, weights):
     ret =  __convertCartesianToLatLong(x_sum / weight_sum, y_sum / weight_sum, z_sum / weight_sum)
     return ret
 
+
+def getCluster(lon, lat, clusters):
+    lowest_value = float(-'inf')
+    lowest_cluster = -1
+
+    for i in len(clusters):
+        cluster_lon, cluster_lat = clusters[i]
+        distance = getDistance(cluster_lon, cluster_lat, lon, lat)
+        if distance < lowest_value:
+            lowest_value = distance
+            lowest_cluster = i
+
+    return lowest_cluster

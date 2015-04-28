@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
+
 from Wrapper import MySQLConnection
 import os
 import numpy as np
 import cPickle as pickle
+from sklearn.cluster import KMeans
+
 
 def pickleTrainingCorpus(filename):
     token_to_data = {}    #< maps a token to a tuple of its coordinates,  variance and its count
@@ -45,3 +48,16 @@ def pickleTrainingCorpus(filename):
             token_to_data[token] = ((mean_lon, mean_lat), variance, count)
 
     pickle.dump(token_to_data, open(filename, 'wb'))
+    return token_to_data
+
+def pickleClusters(filename, token_to_data, k):
+    coordinate_list = []
+
+    for coordinates, variance, count in token_to_data.itervalues():
+        coordinate_list.append(coordinates)
+
+    data = np.asarray(coordinate_list, dtype=float)
+    kmeans = KMeans(n_clusters=k)
+    kmeans.fit(data)
+    pickle.dump(kmeans, open(filename, 'wb'))
+    return list(kmeans.cluster_centers_)

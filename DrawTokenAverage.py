@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 
-import os
 import sys
-from Wrapper import MySQLConnection
 from Wrapper import MapFunctions
 import matplotlib.pyplot as plt
 import numpy as np
+import cPickle as pickle
+
 
 """ DEFINE CONSTANTS """
 # There must be at least that many occurrences of a token
@@ -15,12 +15,10 @@ COUNT_THRESHOLD = 1
 VARIANCE_THRESHOLD = 2  #float('inf')
 """ ---------------- """
 
-if len(sys.argv) != 2:
-    print "Specify the output path for the graph."
+if len(sys.argv) < 3 :
+    print "Specify the path for the corpus and the output path for the graph"
 
-
-# Make connection
-database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TRAIN")
+token_to_data = pickle.load(open(sys.arv[1], 'rb')) #< ((lon, lat), variance, count)
 
 # Prepare map
 basemap = MapFunctions.prepareMap()
@@ -28,7 +26,8 @@ basemap = MapFunctions.prepareMap()
 # Iterate over all tweets and split the tokenised texts.
 # Each token maps to a list of lon, lat tuples
 token_distribution = {}
-for tokens, lat, lon in database.getRows("`tokenised`, `lat`, `long`"):
+for tokens, values in token_to_data.iteritems():
+    (lon, lat), variance, count = values
     for token in tokens.split():
         token_distribution.setdefault(token, []).append((lon, lat))
 
@@ -63,4 +62,4 @@ for token, coordinates_of_tuple in token_distribution.iteritems():
 for lon, lat in coordinates_to_draw:
     basemap.plot(lon, lat, 'r,', latlon=True)
 
-plt.savefig(sys.argv[1], format='png')
+plt.savefig(sys.argv[2], format='png')
