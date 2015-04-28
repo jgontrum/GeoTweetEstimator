@@ -44,8 +44,14 @@ dev_corpus_eval.setData(token_to_data, tokens_to_factor)
 dev_corpus_eval.setDistanceThreshold(200)
 
 threshold = 5
-dev_corpus.setVarianceThreshold(threshold)
+dev_corpus_eval.setVarianceThreshold(threshold)
 print ""
 print threshold
-print dev_corpus.evaluateCorpus()
+print dev_corpus_eval.evaluateCorpus()
+
+for key in tokens_to_factor.iterkeys():
+    tokens_to_factor[key] = 1
+
+print dev_corpus_eval.evaluateCorpus()
+
 
