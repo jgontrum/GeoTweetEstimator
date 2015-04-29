@@ -10,4 +10,4 @@ if len(sys.argv) < 3:
     sys.exit(1)
 
 token_to_data = DataFunctions.pickleTrainingCorpus(sys.argv[1])
-clusters = DataFunctions.pickleClusters(sys.argv[2], token_to_data, 8)
+clusters = DataFunctions.pickleClusters(sys.argv[2], token_to_data, 5)

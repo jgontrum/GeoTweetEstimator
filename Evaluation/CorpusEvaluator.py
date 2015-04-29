@@ -15,7 +15,7 @@ class CorpusEvaluator:
         self.n = 0
         self.data = None
         self.token_to_factor = None
-        self.cluster = None
+        self.clusters = None
         self.variance_threshold = 0
         self.distance_threshold = 0
         self.draw = False
@@ -31,7 +31,7 @@ class CorpusEvaluator:
     def setData(self, data, token_to_factor, clusters):
         self.data = data
         self.token_to_factor = token_to_factor
-        self.cluster = clusters
+        self.clusters = clusters
 
     def setVarianceThreshold(self, threshold):
         self.variance_threshold = threshold
@@ -43,7 +43,8 @@ class CorpusEvaluator:
         coordinate_list = []
         weight_list = []
         failed = 0
-        
+        var_sum = 0
+
         if self.draw:
             basemap = MapFunctions.prepareMap()
 
@@ -60,6 +61,7 @@ class CorpusEvaluator:
             
             lon, lat = coordinates
             weight = self.token_to_factor[token]
+            
 
             # Update lon, lat values:
             #lon, lat = EvaluationFunctions.getWeightedPosition()
@@ -75,6 +77,7 @@ class CorpusEvaluator:
                 if variance == 0:
                     variance = 0.0000000000000000001
                 weight_list.append(1/variance)
+                var_sum += variance
 
             else:
                 failed += 1
@@ -101,7 +104,7 @@ class CorpusEvaluator:
             plt.text(10000,80000, 'Threshold: ' + str(self.variance_threshold))
             plt.savefig('img/tweet_' + str(self.variance_threshold) + "_" + str(self.i) + ".png", format='png')
             plt.clf()
-
+        print distance, ',', var_sum / denumerator
         return (lon_score, lat_score, location[0], location[1], distance)
 
 

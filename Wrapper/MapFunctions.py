@@ -7,6 +7,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 
 from mpl_toolkits.basemap import Basemap
+import matplotlib.pyplot as plt
 
 """
 This wrapper maintains all functions about the Basemap package, that allows you to draw graphs
@@ -17,7 +18,7 @@ The prepareMap() function returns a Basemap-object, that is centered on Germany,
 # Returns a map with default setting
 def prepareMap():
     map = Basemap(projection='merc',
-    resolution='l',
+    resolution='i',
                   area_thresh=200,
                   lat_0=51.16,  # center
                   lon_0=10.44,  # center
@@ -35,3 +36,4 @@ def prepareMap():
     map.drawmapboundary(fill_color='lightblue')
 
     return map
+

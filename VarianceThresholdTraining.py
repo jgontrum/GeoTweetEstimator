@@ -27,7 +27,7 @@ dev_corpus.setDistanceThreshold(200)
 
 thresholds = [2000,1700,1600, 1400, 1200, 1000, 800 , 600, 500, 1 ]
 thresholds = range(1400, 1500, 10)
-thresholds = [ int(sys.argv[2]) ]
+thresholds = [ float(sys.argv[3]) ]
 for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
     print ""

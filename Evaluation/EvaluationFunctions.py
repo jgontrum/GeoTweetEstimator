@@ -48,7 +48,7 @@ def getSizeForValue(count):
         size = min_s
     return size
 
-def __convertLatLongToCartesian(lon, lat):
+def convertLatLongToCartesian(lon, lat):
     lat = lat / (180/math.pi)
     lon = lon / (180/math.pi)
     x = math.cos(lat) * math.cos(lon)
@@ -56,7 +56,7 @@ def __convertLatLongToCartesian(lon, lat):
     z = math.sin(lat)
     return (x,y,z)
 
-def __convertCartesianToLatLong(x,y,z):
+def convertCartesianToLatLong(x,y,z):
     lon = math.atan2(y, x)
     hyp = math.sqrt(x * x + y * y)
     lat = math.atan2(z, hyp)
@@ -71,18 +71,18 @@ def getWeightedMidpoint(coordinates, weights):
     for i in range(len(coordinates)):
         lon, lat = coordinates[i]
         weight = weights[i]
-        x,y,z = __convertLatLongToCartesian(lon, lat)
+        x,y,z = convertLatLongToCartesian(lon, lat)
         x_sum = x_sum + (x * weight)
         y_sum = y_sum + (y * weight)
         z_sum = z_sum + (z * weight)
         weight_sum += weight
 
-    ret =  __convertCartesianToLatLong(x_sum / weight_sum, y_sum / weight_sum, z_sum / weight_sum)
+    ret =  convertCartesianToLatLong(x_sum / weight_sum, y_sum / weight_sum, z_sum / weight_sum)
     return ret
 
 
 def getCluster(lon, lat, clusters):
-    lowest_value = float('-inf')
+    lowest_value = float('inf')
     lowest_cluster = -1
 
     for i in range(len(clusters)):

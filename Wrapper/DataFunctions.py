@@ -20,6 +20,7 @@ def pickleTrainingCorpus(filename):
     # Iterate over all tweets and split the tokenised texts.
     # Each token maps to a list of lon, lat tuples
     token_distribution = {}
+    token_distribution_cart = {}
     tweet_coordinates = []
     for tokens, lat, lon in database.getRows("`tokenised_low`, `lat`, `long`"):
         tweet_coordinates.append((lon, lat))

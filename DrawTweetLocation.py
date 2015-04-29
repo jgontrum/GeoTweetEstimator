@@ -27,19 +27,20 @@ database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", cor
 basemap = MapFunctions.prepareMap()
 
 colors =  ['firebrick', 'green', 'navy', 'yellow', 'slategray', 'plum',
-           'mediumorchid', 'gold', 'coral', 'lavender', 'lightskyblue', 'lime']
+           'mediumorchid', 'lightskyblue', 'coral', 'lavender', 'gold', 'lime']
 
 # Iterate over all tweets and split the tokenised texts.
 # Each token maps to a list of lon, lat tuples
 for lon, lat in database.getRows("`long`, `lat`"): 
     cluster = EvaluationFunctions.getCluster(lon, lat, clusters)
     col = colors[cluster]
-    basemap.plot(lon, lat, ',', color = col, latlon=True)
+    basemap.plot(lon, lat, '.', color = col, markeredgecolor=col, markersize=1, latlon=True)
 
 for i in range(len(clusters)):
     lon, lat = clusters[i]
     col = colors[i]
-    basemap.plot(lon, lat, '.', color = col,  latlon=True)
+    basemap.plot(lon, lat, 'x', color = 'black', markeredgecolor='black', markersize=5, latlon=True)
 
 
-plt.savefig(sys.argv[2], format='png')
+
+plt.savefig(sys.argv[2], format='png', bbox_inches='tight', dpi=900)
