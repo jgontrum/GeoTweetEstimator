@@ -7,7 +7,7 @@ import os
 import numpy as np
 import cPickle as pickle
 from sklearn.cluster import KMeans
-
+from Evaluation import EvaluationFunctions
 
 def pickleTrainingCorpus(filename):
     token_to_data = {}    #< maps a token to a tuple of its coordinates,  variance and its count
@@ -19,36 +19,31 @@ def pickleTrainingCorpus(filename):
 
     # Iterate over all tweets and split the tokenised texts.
     # Each token maps to a list of lon, lat tuples
-    token_distribution = {}
     token_distribution_cart = {}
     tweet_coordinates = []
     for tokens, lat, lon in database.getRows("`tokenised_low`, `lat`, `long`"):
         tweet_coordinates.append((lon, lat))
+        cartesian = EvaluationFunctions.convertLatLongToCartesian(lon, lat)
         for token in tokens.split():
-            token_distribution.setdefault(token, []).append((lon, lat))
+            token_distribution_cart.setdefault(token, []).append(cartesian)
 
-
-    # Calculate the variance for each token
-    # Factor for making degrees of longitude roughly equal degrees of latitude in variance calculation
-    longitude_factor = 0.636
-
-    for token, coordinates_of_tuple in token_distribution.iteritems():
+    for token, coordinates_of_tuple in token_distribution_cart.iteritems():
         count = len(coordinates_of_tuple)
         if count > COUNT_THRESHOLD:
             # Convert coordinate list to numpy array
             np_list = np.asarray(coordinates_of_tuple, dtype=float)
 
             # Calculate the mean values for
-            (mean_lon, mean_lat) = tuple(np.mean(np_list, axis=0))
+            (mean_x, mean_y, mean_z) = tuple(np.mean(np_list, axis=0))
 
             variance_num = 0
-            for (point_lon, point_lat) in coordinates_of_tuple:
-                variance_num += (point_lon - mean_lon)**2 + (longitude_factor*(point_lat - mean_lat))**2
+            for (x, y, z) in coordinates_of_tuple:
+                variance_num += (x - mean_x)**2 + (y - mean_y)**2 + (z - mean_z)**2
 
             # Calculate the variance
             variance = variance_num / count
 
-            token_to_data[token] = ((mean_lon, mean_lat), variance, count)
+            token_to_data[token] = (EvaluationFunctions.convertCartesianToLatLong(mean_x, mean_y, mean_z), variance, count)
 
     pickle.dump(token_to_data, open(filename, 'wb'))
     return tweet_coordinates 
