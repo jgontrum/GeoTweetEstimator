@@ -82,10 +82,10 @@ def getWeightedMidpoint(coordinates, weights):
 
 
 def getCluster(lon, lat, clusters):
-    lowest_value = float(-'inf')
+    lowest_value = float('-inf')
     lowest_cluster = -1
 
-    for i in len(clusters):
+    for i in range(len(clusters)):
         cluster_lon, cluster_lat = clusters[i]
         distance = getDistance(cluster_lon, cluster_lat, lon, lat)
         if distance < lowest_value:

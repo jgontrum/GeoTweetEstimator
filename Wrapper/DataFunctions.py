@@ -20,7 +20,9 @@ def pickleTrainingCorpus(filename):
     # Iterate over all tweets and split the tokenised texts.
     # Each token maps to a list of lon, lat tuples
     token_distribution = {}
+    tweet_coordinates = []
     for tokens, lat, lon in database.getRows("`tokenised_low`, `lat`, `long`"):
+        tweet_coordinates.append((lon, lat))
         for token in tokens.split():
             token_distribution.setdefault(token, []).append((lon, lat))
 
@@ -48,16 +50,11 @@ def pickleTrainingCorpus(filename):
             token_to_data[token] = ((mean_lon, mean_lat), variance, count)
 
     pickle.dump(token_to_data, open(filename, 'wb'))
-    return token_to_data
+    return tweet_coordinates 
 
-def pickleClusters(filename, token_to_data, k):
-    coordinate_list = []
-
-    for coordinates, variance, count in token_to_data.itervalues():
-        coordinate_list.append(coordinates)
-
+def pickleClusters(filename, coordinate_list, k):
     data = np.asarray(coordinate_list, dtype=float)
     kmeans = KMeans(n_clusters=k)
     kmeans.fit(data)
-    pickle.dump(kmeans, open(filename, 'wb'))
+    pickle.dump(kmeans.cluster_centers_, open(filename, 'wb'))
     return list(kmeans.cluster_centers_)

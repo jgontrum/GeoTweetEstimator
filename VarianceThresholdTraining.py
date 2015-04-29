@@ -7,12 +7,14 @@ from Evaluation import CorpusEvaluator
 import cPickle as pickle
 
 load_pickled = None
-if len(sys.argv) >= 2:
+if len(sys.argv) >= 3:
     load_pickled = sys.argv[1]
+    load_clusters = sys.argv[2]
 else:
     sys.exit(1)
 
 token_to_data = pickle.load(open(load_pickled, 'rb')) #< ((lon, lat), variance, count)
+clusters = pickle.load(open(load_clusters, 'rb')) #<
 
 token_to_factor = {}
 for token,data in token_to_data.iteritems():
@@ -20,7 +22,7 @@ for token,data in token_to_data.iteritems():
 
 """ EVALUATE """
 dev_corpus = CorpusEvaluator.CorpusEvaluator(corpus='DEV')
-dev_corpus.setData(token_to_data, token_to_factor)
+dev_corpus.setData(token_to_data, token_to_factor, clusters)
 dev_corpus.setDistanceThreshold(200)
 
 thresholds = [2000,1700,1600, 1400, 1200, 1000, 800 , 600, 500, 1 ]
