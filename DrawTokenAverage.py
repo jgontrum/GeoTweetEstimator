@@ -26,7 +26,8 @@ basemap = MapFunctions.prepareMap()
 coordinates_to_draw = [] # Coordinates that will be drawn to the map
 
 for (lon, lat), variance, count in token_to_data.itervalues():
-    coordinates_to_draw.append((lon, lat))
+    if variance < float(sys.argv[3]):
+        coordinates_to_draw.append((lon, lat))
 
 # Draw coordinates to the map:
 for lon, lat in coordinates_to_draw:

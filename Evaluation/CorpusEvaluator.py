@@ -7,6 +7,7 @@ from Wrapper import MySQLConnection
 from Wrapper import MapFunctions
 import matplotlib.pyplot as plt
 from Evaluation import EvaluationFunctions
+from random import randint
 
 class CorpusEvaluator:
     def __init__(self, corpus='DEV'):
@@ -67,6 +68,10 @@ class CorpusEvaluator:
             #lon, lat = EvaluationFunctions.getWeightedPosition()
 
             if variance < self.variance_threshold:
+                # 0-hypothese
+                #token = self.data.keys()[randint(0,len(self.data.keys()))]
+                #coordinates, variance, count = self.data[token]
+                
                 if self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count), color='black', fontsize=6)
                     text_pos -= 42000
@@ -95,7 +100,8 @@ class CorpusEvaluator:
         lon_score, lat_score = EvaluationFunctions.getWeightedMidpoint(coordinate_list, weight_list)
 
         distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
-        
+        print distance
+
         if self.draw:
             basemap.plot(location[0], location[1], '^', mfc='none' , markeredgecolor='black', latlon=True, alpha=1)
             basemap.plot(lon_score, lat_score, 'v',  mfc='none',  markeredgecolor='black', latlon=True, alpha=1)
@@ -104,7 +110,7 @@ class CorpusEvaluator:
             plt.text(10000,80000, 'Threshold: ' + str(self.variance_threshold))
             plt.savefig('img/tweet_' + str(self.variance_threshold) + "_" + str(self.i) + ".png", format='png')
             plt.clf()
-        print distance, ',', var_sum / denumerator
+        #print distance, ',', var_sum / denumerator
         return (lon_score, lat_score, location[0], location[1], distance)
 
 
