@@ -8,6 +8,7 @@ from Wrapper import MapFunctions
 import matplotlib.pyplot as plt
 from Evaluation import EvaluationFunctions
 from random import randint
+from tabulate import tabulate
 
 class CorpusEvaluator:
     def __init__(self, corpus='DEV'):
@@ -69,8 +70,8 @@ class CorpusEvaluator:
 
             if variance < self.variance_threshold:
                 # 0-hypothese
-                #token = self.data.keys()[randint(0,len(self.data.keys()))]
-                #coordinates, variance, count = self.data[token]
+                token = self.data.keys()[randint(0,len(self.data.keys()))]
+                coordinates, variance, count = self.data[token]
                 
                 if self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count), color='black', fontsize=6)
@@ -81,7 +82,7 @@ class CorpusEvaluator:
                 coordinate_list.append(coordinates)
                 if variance == 0:
                     variance = 0.0000000000000000001
-                weight_list.append(1/variance)
+                weight_list.append(weight)
                 var_sum += variance
 
             else:
@@ -100,7 +101,7 @@ class CorpusEvaluator:
         lon_score, lat_score = EvaluationFunctions.getWeightedMidpoint(coordinate_list, weight_list)
 
         distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
-        print distance
+        #print distance
 
         if self.draw:
             basemap.plot(location[0], location[1], '^', mfc='none' , markeredgecolor='black', latlon=True, alpha=1)
@@ -124,6 +125,11 @@ class CorpusEvaluator:
 
         cluster_matches = 0
         cluster_mismatches = 0
+        
+        n = len(self.clusters)
+        real_to_calc_matches = [[0 for x in range(n+1)] for x in range(n)] 
+        for i in range(n):
+            real_to_calc_matches[i][0] = i
 
        # self.n = 3
         for self.i in range(0,self.n):
@@ -139,7 +145,7 @@ class CorpusEvaluator:
                 else:
                     distance_mismatches += 1
 
-                if EvaluationFunctions.evaluateCluster(lon_calculated, lat_calculated, lon_real, lat_real, self.clusters):
+                if EvaluationFunctions.evaluateCluster(lon_calculated, lat_calculated, lon_real, lat_real, self.clusters, real_to_calc_matches):
                     cluster_matches += 1
                 else:
                     cluster_mismatches += 1
@@ -155,6 +161,12 @@ class CorpusEvaluator:
         print 'cluster_matches: ', cluster_matches, 'cluster_mismatches: ', cluster_mismatches
         if cluster_matches + cluster_mismatches > 0:
             print 'cluster_ratio: ', str(float(cluster_matches) / (cluster_matches + cluster_mismatches))
+
+        print "printing real to calc"
+       
+        print tabulate(real_to_calc_matches, tablefmt="latex",headers=range(n)) 
+        
+        print tabulate(EvaluationFunctions.transformStatistice(real_to_calc_matches), tablefmt="latex",headers=range(n)) 
 
 
         if valids > 0:

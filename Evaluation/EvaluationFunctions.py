@@ -20,10 +20,22 @@ def getDistance(lon1, lat1, lon2, lat2):
 def evaluateDistance(distance, distance_threshold):
         return distance < distance_threshold
 
-def evaluateCluster(lon1, lat1, lon2, lat2, clusters):
-    cluster1 = getCluster(lon1, lat1, clusters)
-    cluster2 = getCluster(lon2, lat2, clusters)
+def evaluateCluster(lon1, lat1, lon2, lat2, clusters, statistics=None):
+    cluster2 = getCluster(lon1, lat1, clusters)
+    cluster1 = getCluster(lon2, lat2, clusters)
+    if statistics is not None:
+        statistics[cluster1][cluster2+1] += 1
     return cluster1 == cluster2
+
+def transformStatistice(statistics):
+    n = len(statistics)
+    real_to_calc_matches = [[0 for x in range(n+1)] for x in range(n)] 
+    for i in range(n):
+        real_to_calc_matches[i][0] = i
+        summed = float(sum(statistics[i][1:]))
+        for j in range(1,n+1):
+            real_to_calc_matches[i][j] = round(statistics[i][j] / summed,2)
+    return real_to_calc_matches
 
 
 # Return a color for a variance value
