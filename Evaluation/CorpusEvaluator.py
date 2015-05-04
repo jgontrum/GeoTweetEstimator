@@ -21,6 +21,8 @@ class CorpusEvaluator:
         self.variance_threshold = 0
         self.distance_threshold = 0
         self.draw = False
+        self.mode = "naive" # null, variance, top
+        self.top = 2
 
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
 
@@ -34,6 +36,10 @@ class CorpusEvaluator:
         self.data = data
         self.token_to_factor = token_to_factor
         self.clusters = clusters
+
+    def setMode(self, mode, top=2):
+        self.mode = mode
+        self.top = top
 
     def setVarianceThreshold(self, threshold):
         self.variance_threshold = threshold
@@ -63,15 +69,12 @@ class CorpusEvaluator:
             
             lon, lat = coordinates
             weight = self.token_to_factor[token]
-            
-
-            # Update lon, lat values:
-            #lon, lat = EvaluationFunctions.getWeightedPosition()
 
             if variance < self.variance_threshold:
                 # 0-hypothese
-                token = self.data.keys()[randint(0,len(self.data.keys()))]
-                coordinates, variance, count = self.data[token]
+                if self.mode == "null":
+                    token = self.data.keys()[randint(0,len(self.data.keys()))]
+                    coordinates, variance, count = self.data[token]
                 
                 if self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count), color='black', fontsize=6)
@@ -80,8 +83,12 @@ class CorpusEvaluator:
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.7)
 
                 coordinate_list.append(coordinates)
-                if variance == 0:
-                    variance = 0.0000000000000000001
+                if self.mode == 'variance':
+                    if variance == 0:
+                        variance = 0.0000000000000000001
+                    weight = variance
+                if self.mode == 'top':
+                    weight = variance
                 weight_list.append(weight)
                 var_sum += variance
 
@@ -92,11 +99,24 @@ class CorpusEvaluator:
                     text_pos -= 40000
                     current_color = 'gray' 
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.1)
+
         denumerator = float(len(tokens) - failed)
 
         if denumerator == 0.0:
             plt.clf()
             return None
+
+        if self.mode == "top":
+            c = 0
+            c_list = []
+            w_list = []
+            for i in sorted(range(len(weight_list)), key=lambda k: weight_list[k], reverse=True):
+                c += 1
+                if c <= self.top:
+                    c_list.append(coordinate_list[i])
+                    w_list.append(weight_list[i])
+            coordinate_list = c_list
+            weight_list = w_list
 
         lon_score, lat_score = EvaluationFunctions.getWeightedMidpoint(coordinate_list, weight_list)
 
@@ -112,6 +132,7 @@ class CorpusEvaluator:
             plt.savefig('img/tweet_' + str(self.variance_threshold) + "_" + str(self.i) + ".png", format='png')
             plt.clf()
         #print distance, ',', var_sum / denumerator
+
         return (lon_score, lat_score, location[0], location[1], distance)
 
 

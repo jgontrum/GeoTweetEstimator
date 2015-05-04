@@ -24,6 +24,7 @@ for token,data in token_to_data.iteritems():
 dev_corpus = CorpusEvaluator.CorpusEvaluator(corpus='DEV')
 dev_corpus.setData(token_to_data, token_to_factor, clusters)
 dev_corpus.setDistanceThreshold(200)
+dev_corpus.setMode("top", top=3)
 
 thresholds = [2000,1700,1600, 1400, 1200, 1000, 800 , 600, 500, 1 ]
 thresholds = range(1400, 1500, 10)
