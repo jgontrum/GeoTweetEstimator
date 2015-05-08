@@ -106,6 +106,10 @@ class CorpusEvaluator:
             plt.clf()
             return None
 
+
+        print coordinate_list
+        print weight_list
+
         if self.mode == "top":
             c = 0
             c_list = []
@@ -114,9 +118,14 @@ class CorpusEvaluator:
                 c += 1
                 if c <= self.top:
                     c_list.append(coordinate_list[i])
-                    w_list.append(weight_list[i])
+                    weight = weight_list[i]
+                    if weight == 0:
+                        weight = 0.0000000000000000001
+                    w_list.append(float(1)/weight)
             coordinate_list = c_list
             weight_list = w_list
+        print coordinate_list
+        print weight_list
 
         lon_score, lat_score = EvaluationFunctions.getWeightedMidpoint(coordinate_list, weight_list)
 
