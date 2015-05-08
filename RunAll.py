@@ -34,7 +34,21 @@ evaluator_list = [Weighting.UnweightedEvaluator(),
 
 thresholds = [ 1, 0.0017138, 0.0014019, 0.000594, 0.0003886]
 
+for i in range(1,15):
+    evaluator =  Weighting.InversedVarianceEvaluator(zerovariance = float(math.pow(1,i))),
 
+    dev_corpus.setEvaluator(evaluator)
+    print "Evaluator: " + str(evaluator)
+
+    for threshold in thresholds:
+        dev_corpus.setVarianceThreshold(threshold)
+        print ""
+        print "threshold: ", threshold
+        print dev_corpus.evaluateCorpus()
+
+    print "\n\n"
+
+"""
 for evaluator in evaluator_list:
     dev_corpus.setEvaluator(evaluator)
     print "Evaluator: " + str(evaluator)
@@ -62,3 +76,4 @@ for top in range(5,1,-1):
             print dev_corpus.evaluateCorpus()
 
         print "\n\n"
+"""
