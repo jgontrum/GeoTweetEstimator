@@ -3,8 +3,10 @@
 __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 
 import sys
+import math
 from Evaluation import CorpusEvaluator
 import cPickle as pickle
+from Evaluation import Weighting
 
 load_pickled = None
 if len(sys.argv) >= 3:
@@ -21,17 +23,24 @@ for token,data in token_to_data.iteritems():
     token_to_factor[token] = 1.0
 
 """ EVALUATE """
-dev_corpus = CorpusEvaluator.CorpusEvaluator(corpus='DEV')
-dev_corpus.setData(token_to_data, token_to_factor, clusters)
-dev_corpus.setDistanceThreshold(200)
-dev_corpus.setMode("top", top=1)
+evaluator_un = Weighting.UnweightedEvaluator()
 
-thresholds = [2000,1700,1600, 1400, 1200, 1000, 800 , 600, 500, 1 ]
-thresholds = range(1400, 1500, 10)
+evaluator_var = Weighting.InversedVarianceEvaluator(zerovariance = float(math.pow(1,6)))
+
+evaluator_net_var = Weighting.NegativeVarianceEvaluator()
+
+evaluator_list = Weighting.WeightListEvaluator(token_to_factor,"all = 1")
+
+evaluator_top = Weighting.TopTokensEvaluator(evaluator_un, top = 3)
+
+dev_corpus = CorpusEvaluator.CorpusEvaluator(corpus='DEV')
+dev_corpus.setData(token_to_data, clusters)
+dev_corpus.setDistanceThreshold(200)
+dev_corpus.setEvaluator(evaluator_un)
+
 thresholds = [ float(sys.argv[3]) ]
 for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
     print ""
     print threshold
     print dev_corpus.evaluateCorpus()
-    

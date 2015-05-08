@@ -16,13 +16,12 @@ class CorpusEvaluator:
         self.location = [] # list of lat, lan tuples
         self.n = 0
         self.data = None
-        self.token_to_factor = None
         self.clusters = None
         self.variance_threshold = 0
         self.distance_threshold = 0
         self.draw = False
-        self.mode = "naive" # null, variance, top
-        self.top = 2
+        self.evaluator = None
+        self.null = False # test 0-hypo
 
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
 
@@ -32,14 +31,13 @@ class CorpusEvaluator:
         self.n = len(self.tweets)
         assert len(self.tweets) == len(self.location)
 
-    def setData(self, data, token_to_factor, clusters):
+    def setData(self, data, token_to_factor, clusters, null=False):
         self.data = data
-        self.token_to_factor = token_to_factor
         self.clusters = clusters
+        self.null = null
 
-    def setMode(self, mode, top=2):
-        self.mode = mode
-        self.top = top
+    def setEvaluator(self, evaluator):
+        self.evaluator = evaluator
 
     def setVarianceThreshold(self, threshold):
         self.variance_threshold = threshold
@@ -48,10 +46,8 @@ class CorpusEvaluator:
         self.distance_threshold = threshold
 
     def evaluateTweet(self, tokens, location):
-        coordinate_list = []
-        weight_list = []
+        token_data = []
         failed = 0
-        var_sum = 0
 
         if self.draw:
             basemap = MapFunctions.prepareMap()
@@ -68,11 +64,10 @@ class CorpusEvaluator:
             coordinates, variance, count = self.data[token]
             
             lon, lat = coordinates
-            weight = self.token_to_factor[token]
 
             if variance < self.variance_threshold:
                 # 0-hypothese
-                if self.mode == "null":
+                if self.null:
                     token = self.data.keys()[randint(0,len(self.data.keys()))]
                     coordinates, variance, count = self.data[token]
                 
@@ -82,15 +77,7 @@ class CorpusEvaluator:
                     current_color = EvaluationFunctions.getColorForValue(variance)
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.7)
 
-                coordinate_list.append(coordinates)
-                if self.mode == 'variance':
-                    if variance == 0:
-                        variance = 0.0000000000000000001
-                    weight = variance
-                if self.mode == 'top':
-                    weight = variance
-                weight_list.append(weight)
-                var_sum += variance
+                token_data.append((token, variance, count, coordinates))
 
             else:
                 failed += 1
@@ -106,31 +93,10 @@ class CorpusEvaluator:
             plt.clf()
             return None
 
-
-        print coordinate_list
-        print weight_list
-
-        if self.mode == "top":
-            c = 0
-            c_list = []
-            w_list = []
-            for i in sorted(range(len(weight_list)), key=lambda k: weight_list[k], reverse=True):
-                c += 1
-                if c <= self.top:
-                    c_list.append(coordinate_list[i])
-                    weight = weight_list[i]
-                    if weight == 0:
-                        weight = 0.0000000000000000001
-                    w_list.append(float(1)/weight)
-            coordinate_list = c_list
-            weight_list = w_list
-        print coordinate_list
-        print weight_list
-
+        coordinate_list, weight_list = self.evaluator.evaluate(token_data)
         lon_score, lat_score = EvaluationFunctions.getWeightedMidpoint(coordinate_list, weight_list)
 
         distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
-        #print distance
 
         if self.draw:
             basemap.plot(location[0], location[1], '^', mfc='none' , markeredgecolor='black', latlon=True, alpha=1)
@@ -140,7 +106,6 @@ class CorpusEvaluator:
             plt.text(10000,80000, 'Threshold: ' + str(self.variance_threshold))
             plt.savefig('img/tweet_' + str(self.variance_threshold) + "_" + str(self.i) + ".png", format='png')
             plt.clf()
-        #print distance, ',', var_sum / denumerator
 
         return (lon_score, lat_score, location[0], location[1], distance)
 
@@ -192,12 +157,9 @@ class CorpusEvaluator:
         if cluster_matches + cluster_mismatches > 0:
             print 'cluster_ratio: ', str(float(cluster_matches) / (cluster_matches + cluster_mismatches))
 
-        print "printing real to calc"
-       
-        print tabulate(real_to_calc_matches, tablefmt="latex",headers=range(n)) 
+        #print tabulate(real_to_calc_matches, tablefmt="latex",headers=range(n))
         
-        print tabulate(EvaluationFunctions.transformStatistice(real_to_calc_matches), tablefmt="latex",headers=range(n)) 
-
+        #print tabulate(EvaluationFunctions.transformStatistice(real_to_calc_matches), tablefmt="latex",headers=range(n))
 
         if valids > 0:
             return  distance_score / float(valids)
