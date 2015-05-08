@@ -162,7 +162,7 @@ class CorpusEvaluator:
         #print tabulate(EvaluationFunctions.transformStatistice(real_to_calc_matches), tablefmt="latex",headers=range(n))
 
         if valids > 0:
-            return  distance_score / float(valids)
+            return  (distance_score / float(valids), float(cluster_matches) / (cluster_matches + cluster_mismatches))
         else:
-            return  float('inf')
+            return  (float('inf') , float('inf'))
 
