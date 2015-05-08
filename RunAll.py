@@ -29,7 +29,7 @@ dev_corpus.setData(token_to_data, clusters)
 dev_corpus.setDistanceThreshold(200)
 
 evaluator_list = [Weighting.UnweightedEvaluator(),
-                  Weighting.InversedVarianceEvaluator(zerovariance = float(math.pow(1,6))),
+                  Weighting.InversedVarianceEvaluator(zerovariance = float(math.pow(10,6))),
                   Weighting.NegativeVarianceEvaluator(),
                   Weighting.WeightListEvaluator(token_to_factor, "all = 1")]
 
