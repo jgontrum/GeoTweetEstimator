@@ -17,7 +17,7 @@ class UnweightedEvaluator():
         return (coordinate_list, weight_list)
 
     def __str__(self):
-        print "Unweighted Evaluator"
+        return "Unweighted Evaluator"
 
 
 class InversedVarianceEvaluator():
@@ -39,7 +39,7 @@ class InversedVarianceEvaluator():
         return (coordinate_list, weight_list)
 
     def __str__(self):
-        print "Inversed variance (1/variance) Evaluator with weight for variance==0: " + str(self.zerovariance)
+        return "Inversed variance (1/variance) Evaluator with weight for variance==0: " + str(self.zerovariance)
 
 
 class NegativeVarianceEvaluator():
@@ -55,7 +55,7 @@ class NegativeVarianceEvaluator():
         return (coordinate_list, weight_list)
 
     def __str__(self):
-        print "Negative variance (var * -1) Evaluator"
+        return "Negative variance (var * -1) Evaluator"
 
 
 class TopTokensEvaluator():
@@ -82,7 +82,7 @@ class TopTokensEvaluator():
         return (coordinate_list, weight_list)
 
     def __str__(self):
-        print "Top-token Evaluator with top = " + str(self.top) + " and second evaluator = " + str(self.evaluator)
+        return "Top-token Evaluator with top = " + str(self.top) + " and second evaluator = " + str(self.evaluator)
 
 
 class WeightListEvaluator():
@@ -102,4 +102,4 @@ class WeightListEvaluator():
         return (coordinate_list, weight_list)
 
     def __str__(self):
-        print "Weight list Evaluator. Note: " + self.note
+        return "Weight list Evaluator. Note: " + self.note

@@ -31,7 +31,7 @@ class CorpusEvaluator:
         self.n = len(self.tweets)
         assert len(self.tweets) == len(self.location)
 
-    def setData(self, data, token_to_factor, clusters, null=False):
+    def setData(self, data, clusters, null=False):
         self.data = data
         self.clusters = clusters
         self.null = null
