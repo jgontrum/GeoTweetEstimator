@@ -7,9 +7,10 @@ import math
 from Evaluation import CorpusEvaluator
 import cPickle as pickle
 from Evaluation import Weighting
+from WeightLearning import AvgDistance
 
 load_pickled = None
-if len(sys.argv) >= 3:
+if len(sys.argv) > 3:
     load_pickled = sys.argv[1]
     load_clusters = sys.argv[2]
 else:
@@ -18,25 +19,20 @@ else:
 token_to_data = pickle.load(open(load_pickled, 'rb')) #< ((lon, lat), variance, count)
 clusters = pickle.load(open(load_clusters, 'rb')) #<
 
-token_to_factor = {}
-for token,data in token_to_data.iteritems():
-    token_to_factor[token] = 1.0
-
 """ EVALUATE """
-evaluator_un = Weighting.UnweightedEvaluator()
+weights = None
+try:
+    weights = pickle.load(open("AvgDistanceWeights.pickle", 'rb'))
+except:
+    weights = AvgDistance.createWeightedList(token_to_data)
+    pickle.dump(weights, open("AvgDistanceWeights.pickle", 'wb'))
 
-evaluator_var = Weighting.InversedVarianceEvaluator(zerovariance = float(math.pow(1,6)))
-
-evaluator_net_var = Weighting.NegativeVarianceEvaluator()
-
-evaluator_list = Weighting.WeightListEvaluator(token_to_factor,"all = 1")
-
-evaluator_top = Weighting.TopTokensEvaluator(evaluator_un, top = 3)
+evaluator_list = Weighting.WeightListEvaluator(weights, "AvgDistance")
 
 dev_corpus = CorpusEvaluator.CorpusEvaluator(corpus='DEV')
 dev_corpus.setData(token_to_data, clusters)
 dev_corpus.setDistanceThreshold(200)
-dev_corpus.setEvaluator(evaluator_un)
+dev_corpus.setEvaluator(evaluator_list)
 
 thresholds = [ float(sys.argv[3]) ]
 for threshold in thresholds:
