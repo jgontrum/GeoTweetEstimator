@@ -9,7 +9,7 @@ from Evaluation import EvaluationFunctions
 
 """ DEFINE CONSTANTS """
 # There must be at least that many occurrences of a token
-COUNT_THRESHOLD = 2000
+COUNT_THRESHOLD = 1500
 VARIANCE_PERCENTAGE = 75
 """ ---------------- """
 
@@ -17,7 +17,7 @@ load_pickled = None
 if len(sys.argv) == 4:
     load_pickled = sys.argv[1]
     load_clusters = sys.argv[2]
-    cluster = int(sys.argv[2])
+    cluster = int(sys.argv[3])
 else:
     sys.exit(1)
 
@@ -52,9 +52,8 @@ if cluster != -1:
 sorted_by_variance = sorted(token_to_data_filtered.iteritems(),key=lambda x: x[1][1], reverse=True)
 
 num_tokens = len(sorted_by_variance)
-print num_tokens
 # sort by variance
 for token in sorted_by_variance:
     print token[0] + " (" + str(token[1][2]) + ")"
-sys.exit()
+print num_tokens
 

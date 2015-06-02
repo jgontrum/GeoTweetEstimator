@@ -97,6 +97,9 @@ class WeightListEvaluator():
 
         for token, variance, count, coordinates in token_data:
             coordinate_list.append(coordinates)
+            weight = self.token_to_weight[token]
+            if weight == 0:
+                weight = math.pow(10,6)
             weight_list.append(self.token_to_weight[token])
 
         return (coordinate_list, weight_list)

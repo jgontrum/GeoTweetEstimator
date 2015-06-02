@@ -22,6 +22,8 @@ def createWeightedList(token_to_data):
 
     for token, distance_list in token_to_distance_list.iteritems():
         avg_distance = sum(distance_list) / float(len(distance_list))
-        token_to_weight[token] =  -1 * avg_distance
+        if avg_distance == 0:
+            avg_distance = 0.0000001
+        token_to_weight[token] =  1 / avg_distance
 
     return token_to_weight

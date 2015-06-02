@@ -20,6 +20,7 @@ token_to_data = pickle.load(open(load_pickled, 'rb')) #< ((lon, lat), variance, 
 clusters = pickle.load(open(load_clusters, 'rb')) #<
 
 """ EVALUATE """
+"""
 weights = None
 try:
     weights = pickle.load(open("AvgDistanceWeights.pickle", 'rb'))
@@ -28,11 +29,13 @@ except:
     pickle.dump(weights, open("AvgDistanceWeights.pickle", 'wb'))
 
 evaluator_list = Weighting.WeightListEvaluator(weights, "AvgDistance")
+"""
 
+evaluator = Weighting.InversedVarianceEvaluator()
 dev_corpus = CorpusEvaluator.CorpusEvaluator(corpus='DEV')
-dev_corpus.setData(token_to_data, clusters)
+dev_corpus.setData(token_to_data, clusters, null=True)
 dev_corpus.setDistanceThreshold(200)
-dev_corpus.setEvaluator(evaluator_list)
+dev_corpus.setEvaluator(evaluator)
 
 thresholds = [ float(sys.argv[3]) ]
 for threshold in thresholds:
