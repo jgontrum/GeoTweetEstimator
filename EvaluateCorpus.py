@@ -29,7 +29,13 @@ if len(sys.argv) <= 2:
 token_to_data = pickle.load(open(sys.argv[1], 'rb')) #< ((lon, lat), variance, count)
 clusters = pickle.load(open(sys.argv[2], 'rb')) #<
 
+
 variance_data = list(sorted([var for (x, var, y) in token_to_data.values()]))
+c = 1
+n = float(len(variance_data))
+for i in variance_data:
+    print (c/n)*100 , ",", i
+    c+=1
 
 """ EVALUATE """
 dev_corpus = CorpusEvaluator.CorpusEvaluator(corpus='DEV')

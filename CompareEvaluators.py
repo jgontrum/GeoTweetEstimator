@@ -67,7 +67,7 @@ for evaluator in evaluator_list:
         dev_corpus.setVarianceThreshold(threshold)
         print ""
         print "threshold: ", threshold
-        dist, cluster = dev_corpus.evaluateCorpus()
+        dist, median, cluster = dev_corpus.evaluateCorpus()
         row_distance.append(dist)
         row_cluster.append(cluster)
 
@@ -92,7 +92,7 @@ for top in range(5,1,-1):
             dev_corpus.setVarianceThreshold(threshold)
             print ""
             print "threshold: ", threshold
-            dist, cluster =  dev_corpus.evaluateCorpus()
+            dist, med, cluster =  dev_corpus.evaluateCorpus()
             row_distance.append(dist)
             row_cluster.append(cluster)
 
