@@ -26,4 +26,4 @@ if len(sys.argv) == 1: # create only the tokendata
     token_to_data = DataFunctions.pickleTrainingCorpus(sys.argv[1])
 else:
     token_to_data = DataFunctions.pickleTrainingCorpus(sys.argv[1])
-    clusters = DataFunctions.pickleClusters(token_to_data, pickle.load(open(sys.argv[1], 'rb')), 7)
+    clusters = DataFunctions.pickleClusters(sys.argv[2], token_to_data, 7)
