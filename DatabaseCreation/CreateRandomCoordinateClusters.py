@@ -33,4 +33,4 @@ while count < 10000:
 data = np.asarray(ret, dtype=float)
 kmeans = KMeans(n_clusters=int(sys.argv[2]))
 kmeans.fit(data)
-pickle.dump(kmeans.cluster_centers_, open(sys.argv[2], 'wb'))
+pickle.dump(kmeans.cluster_centers_, open(sys.argv[1], 'wb'))
