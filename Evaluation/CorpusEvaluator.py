@@ -175,5 +175,5 @@ class CorpusEvaluator:
         if valids > 0:
             return  (np.mean(distances_np), np.median(distances_np), float(cluster_matches) / (cluster_matches + cluster_mismatches))
         else:
-            return  (float('inf') , float('inf'), float('inf'))
+            return  (float('inf'), float('inf'), float('inf'))
 
