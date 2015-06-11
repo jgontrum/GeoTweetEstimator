@@ -29,7 +29,7 @@ If you are only interested in certain columns, pass them as a string:
 >     print tok, lan, lat
 
 If you want to pass a condition, use getRowsRaw(). You have to specify the columns to select and all conditions
-as astring.
+as a string.
 """
 class MySQLConnectionWrapper:
     # corpus = TRAIN, DEV or TEST

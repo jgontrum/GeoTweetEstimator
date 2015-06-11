@@ -14,29 +14,28 @@ import math
 
 class CorpusEvaluator:
     def __init__(self, corpus='DEV'):
-        self.tweets = [] # list of tokenised tweets
-        self.location = [] # list of lat, lan tuples
-        self.users = []
-        self.n = 0
-        self.data = None
-        self.clusters = None
+        self.tweets = []        # list of tokenised tweets
+        self.location = []      # list of lat, lan tuples
+        self.n = 0              # The size of the corpus
+        self.token_data = None  # Token data from pickleTrainingCorpus()
+        self.clusters = None    # List of centroid coordinates
         self.variance_threshold = 0
         self.distance_threshold = 0
-        self.draw = False
-        self.evaluator = None
-        self.null = False # test 0-hypo
+        self.draw = False       # Toggle weather each tweet should be saved to a PNG file
+        self.evaluator = None   # Creates the weights for the tokens in a tweet
+        self.null = False       # Test 0-hypothesis
 
+        # Load corpus from database:
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
 
         for tokens, lat, lon, user in database.getRows("`tokenised_low`, `lat`, `long`, `user_id`"):
             self.tweets.append(tokens.split())
             self.location.append((lon, lat))
-            self.users.append(user)
         self.n = len(self.tweets)
         assert len(self.tweets) == len(self.location)
 
     def setData(self, data, clusters, null=False):
-        self.data = data
+        self.token_data = data
         self.clusters = clusters
         self.null = null
 
@@ -49,35 +48,35 @@ class CorpusEvaluator:
     def setDistanceThreshold(self, threshold):
         self.distance_threshold = threshold
 
-    def evaluateTweet(self, tokens, location, user_id):
-        token_data = []
-        failed = 0
+    # Takes a list of tokens and a location.
+    # Calculates the position of the tweet and compares it to the actual
+    # position.
+    def evaluateTweet(self, tokens, location):
+        token_data_here = []
 
-        use_data = None
-        # if user_id in self.user_data:
-        #     use_data = self.user_data[user_id]
-        # else:
-        use_data = self.data
+        failed = 0
         if self.draw:
             basemap = MapFunctions.prepareMap()
 
         text_pos = 1890000
+        
+        # Look up the data for each token in the tweet
         for token in tokens:
-            if token not in use_data:
+            if token not in self.token_data:
                 failed += 1
                 if self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | (fail)', color='grey', fontsize=6)
                     text_pos -= 42000
                 continue
 
-            coordinates, variance, count = use_data[token]
+            coordinates, variance, count = self.token_data[token]
             lon, lat = coordinates
 
             if variance < self.variance_threshold:
                 # 0-hypothese
                 if self.null:
-                    token = use_data.keys()[randint(0,len(use_data.keys()))]
-                    coordinates, variance, count = use_data[token]
+                    token = self.token_data.keys()[randint(0,len(self.token_data.keys()))]
+                    coordinates, variance, count = self.token_data[token]
 
                 if self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count), color='black', fontsize=6)
@@ -85,7 +84,7 @@ class CorpusEvaluator:
                     current_color = EvaluationFunctions.getColorForValue(variance)
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.7)
 
-                token_data.append((token, variance, count, coordinates))
+                token_data_here.append((token, variance, count, coordinates))
 
             else:
                 failed += 1
@@ -95,17 +94,17 @@ class CorpusEvaluator:
                     current_color = 'gray'
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.1)
 
-        denumerator = float(len(tokens) - failed)
-        if denumerator == 0.0: # and user_id in self.user_to_midpoint:
+        if float(len(tokens) - failed) == 0.0:
             plt.clf()
             return None
 
-        coordinate_list, weight_list = self.evaluator.evaluate(token_data)
+        # Generate the data for the weighted midpoint
+        coordinate_list, weight_list = self.evaluator.evaluate(token_data_here)
+
+        # Calculate the midpoint
         lon_score, lat_score = EvaluationFunctions.getWeightedMidpoint(coordinate_list, weight_list)
 
-
         distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
-
 
         if self.draw:
             basemap.plot(location[0], location[1], '^', mfc='none' , markeredgecolor='black', latlon=True, alpha=1)
@@ -137,7 +136,7 @@ class CorpusEvaluator:
 
        # self.n = 3
         for self.i in range(0,self.n):
-            values = self.evaluateTweet(self.tweets[self.i], self.location[self.i], self.users[self.i])
+            values = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
             if values is None:
                 invalids += 1
             else:

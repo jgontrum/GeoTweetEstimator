@@ -6,6 +6,17 @@ import sys
 import cPickle as pickle
 from Evaluation import EvaluationFunctions
 
+"""
+Print the most regional tokens for a given cluster.
+
+Usage:
+python PrintRegionalTokens.py TokenData.py ClusterData.py          0
+                                    ^            ^                 ^
+                            Data created by   A list of centroid   The ID of the cluster
+                     pickleTrainingCorpus()   positions, created   to analyse. To find overall
+                        Maps a token to its   by pickleClusters(). common words, use -1.
+                     position and variance.
+"""
 
 """ DEFINE CONSTANTS """
 # There must be at least that many occurrences of a token
@@ -13,12 +24,8 @@ COUNT_THRESHOLD = 1500
 VARIANCE_PERCENTAGE = 75
 """ ---------------- """
 
-load_pickled = None
-if len(sys.argv) == 4:
-    load_pickled = sys.argv[1]
-    load_clusters = sys.argv[2]
-    cluster = int(sys.argv[3])
-else:
+if len(sys.argv) < 4:
+    print "1. TokenData, 2. ClusterData, 3. Cluster to analyse"
     sys.exit(1)
 
 
@@ -26,18 +33,21 @@ else:
 token_to_data = {}    #< maps a token to a tuple of its coordinates,  variance and its count
                       #< ((lon, lat), variance, count)
 
-token_to_data = pickle.load(open(load_pickled, 'rb'))
+token_to_data = pickle.load(open(sys.argv[1], 'rb'))
 
 """ ---------------- """
 
+cluster = int(sys.argv[3])
+
 token_to_data_filtered = {}
 
+# Filter by count
 for token, items in token_to_data.iteritems():
     if items[2] >= COUNT_THRESHOLD:
         token_to_data_filtered[token] = items
 
-if cluster != -1:
-    clusters = pickle.load(open(load_clusters, 'rb')) #<
+if cluster != -1: # Print the common words (for all of DE,AT,CH)
+    clusters = pickle.load(open(sys.argv[2], 'rb')) #<
 
     token_to_data_filtered_cluster = {}
     for token, items in token_to_data_filtered.iteritems():

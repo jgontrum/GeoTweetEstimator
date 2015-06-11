@@ -2,8 +2,11 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 from geopy.distance import vincenty
-from geopy.distance import great_circle
 import math
+
+"""
+This file provides a lot of useful functions that are used in the evaluation proces.
+"""
 
 # Move lon2, lat2 closer to the coordinates of lon1 lon2.
 def getWeightedPosition(lon1, lat1, lon2, lat2, x):
@@ -21,6 +24,7 @@ def getDistance(lon1, lat1, lon2, lat2):
 def evaluateDistance(distance, distance_threshold):
         return distance < distance_threshold
 
+# Checks, if both locations are in the same cluster.
 def evaluateCluster(lon1, lat1, lon2, lat2, clusters, statistics=None):
     cluster2 = getCluster(lon1, lat1, clusters)
     cluster1 = getCluster(lon2, lat2, clusters)
@@ -28,6 +32,7 @@ def evaluateCluster(lon1, lat1, lon2, lat2, clusters, statistics=None):
         statistics[cluster1][cluster2+1] += 1
     return cluster1 == cluster2
 
+# Normalise cluster statistics
 def transformStatistice(statistics):
     n = len(statistics)
     real_to_calc_matches = [[0 for x in range(n+1)] for x in range(n)] 
@@ -37,7 +42,6 @@ def transformStatistice(statistics):
         for j in range(1,n+1):
             real_to_calc_matches[i][j] = round(statistics[i][j] / summed,2)
     return real_to_calc_matches
-
 
 # Return a color for a variance value
 def getColorForValue(variance):
@@ -74,6 +78,7 @@ def convertCartesianToLatLong(x,y,z):
     hyp = math.sqrt(x * x + y * y)
     lat = math.atan2(z, hyp)
     return (lon * (180/math.pi), lat * (180/math.pi))
+
 
 def getWeightedMidpoint(coordinates, weights):
     assert len(coordinates) == len(weights)

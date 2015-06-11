@@ -11,8 +11,14 @@ from Evaluation import EvaluationFunctions
 import os
 
 """
-Draws the coordinates of tweets on a map.
-Demonstrates how the wrappers can be used.
+Loads the Tweets from a corpus and draws them on a map.
+
+Usage:
+python DrawTweetLocation.py ClusterData.pickle OutputGraphic.png
+                                 ^                   ^
+                        A list of centroid      The graphic that
+                        positions, created by   will be created.
+                        pickleClusters().
 """
 
 if len(sys.argv) < 3 :
@@ -26,6 +32,7 @@ database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", cor
 # Prepare map
 basemap = MapFunctions.prepareMap()
 
+# Add more colors, if you have > 12 clusters!
 colors =  ['firebrick', 'green', 'navy', 'yellow', 'slategray', 'plum',
            'mediumorchid', 'lightskyblue', 'coral', 'lavender', 'gold', 'lime']
 
@@ -36,7 +43,7 @@ for lon, lat in database.getRows("`long`, `lat`"):
     col = colors[cluster]
     basemap.plot(lon, lat, '.', color = col, markeredgecolor=col, markersize=1, latlon=True)
 
-
+# Draw the clusters
 for i in range(len(clusters)):
     lon, lat = clusters[i]
     col = colors[i]

@@ -20,7 +20,7 @@ class UnweightedEvaluator():
         return "Unweighted Evaluator"
 
 
-class InversedVarianceEvaluator2():
+class InversedVarianceEvaluatorComplex():
     def __init__(self, pow=-1.0, sub=0.0, zerovariance = float(math.pow(1,6))):
         self.zerovariance = zerovariance
         self.pow = pow
@@ -41,7 +41,7 @@ class InversedVarianceEvaluator2():
         return (coordinate_list, weight_list)
 
     def __str__(self):
-        return "Inversed variance (1/variance) Evaluator with weight for variance==0: " + str(self.zerovariance)
+        return "Complex Inversed variance (1/variance) Evaluator with weight for variance==0: " + str(self.zerovariance)
 
 
 class InversedVarianceEvaluator():
@@ -84,7 +84,7 @@ class NegLogVarianceEvaluator():
         return (coordinate_list, weight_list)
 
     def __str__(self):
-        return "Inversed variance (1/variance) Evaluator with weight for variance==0: " + str(self.zerovariance)
+        return "NegLog variance Evaluator with weight for variance==0: " + str(self.zerovariance)
 
 
 class NegativeVarianceEvaluator():

@@ -9,6 +9,10 @@ import cPickle as pickle
 from Evaluation import Weighting
 from WeightLearning import AvgDistance
 
+"""
+Small script to find the best values for the complex inversed variance evaluator.
+"""
+
 load_pickled = None
 if len(sys.argv) > 2:
     load_pickled = sys.argv[1]
@@ -31,7 +35,7 @@ step = 0.5
 old_pow = -1.0
 new_pow = old_pow
 
-evaluator = Weighting.InversedVarianceEvaluator2(pow=old_pow)
+evaluator = Weighting.InversedVarianceEvaluatorComplex(pow=old_pow)
 dev_corpus.setEvaluator(evaluator)
 
 first_score = dev_corpus.evaluateCorpus()
@@ -43,7 +47,7 @@ while new_score <= old_score and new_pow > -9.0 and iter > 0:
     old_score = new_score
     new_pow = old_pow - step
 
-    evaluator = Weighting.InversedVarianceEvaluator2(pow=new_pow)
+    evaluator = Weighting.InversedVarianceEvaluatorComplex(pow=new_pow)
     dev_corpus.setEvaluator(evaluator)
     res = dev_corpus.evaluateCorpus()
 
@@ -52,7 +56,7 @@ while new_score <= old_score and new_pow > -9.0 and iter > 0:
     sub = 0.00001
     while sub > 0:
         print sub
-        evaluator = Weighting.InversedVarianceEvaluator2(sub=sub, pow=new_pow)
+        evaluator = Weighting.InversedVarianceEvaluatorComplex(sub=sub, pow=new_pow)
         dev_corpus.setEvaluator(evaluator)
         res = dev_corpus.evaluateCorpus()
         sub -= 0.000001
@@ -62,7 +66,7 @@ while new_score <= old_score and new_pow > -9.0 and iter > 0:
     iter -= 1
 
 
-evaluator = Weighting.InversedVarianceEvaluator2(pow=old_pow)
+evaluator = Weighting.InversedVarianceEvaluatorComplex(pow=old_pow)
 dev_corpus.setEvaluator(evaluator)
 print old_pow
 print dev_corpus.evaluateCorpus()

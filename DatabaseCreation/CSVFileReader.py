@@ -19,16 +19,18 @@ outFile = sys.argv[2]
 extractor = TokenExtractor()
 filter = TweetFilter()
 
-c = 0
-m = 0
+c = 0 # All counts
+m = 0 # Matches (valid Tweets from DE,AT,CH)
 writer = unicodecsv.writer(open(outFile, 'wb'), delimiter=',', quotechar='"',escapechar='\\', quoting=unicodecsv.QUOTE_ALL, encoding='utf-8')
 reader = unicodecsv.reader(inputFile, delimiter="|", quoting=unicodecsv.QUOTE_NONE)
 for row in reader:
-    c+=1
-    if c % 10000 == 0:
+    c += 1
+    if c % 100000 == 0:
         print c , m
+    # Check, that the whole row is read correctly
     if len(row) > 6:
         try:
+            # Convert the strings in the CSV to numbers etc.
             timestamp = unicode(row[0].strip())
             user_id = long(row[1].strip())
             tweet_id = long(row[2].strip())
@@ -43,19 +45,18 @@ for row in reader:
                 lon = None
                 lat = None
 
-            tweet = unicode(" ".join(row[6:]).strip())
-            #print tweet
-            #print filter.isValidCSV(user_id, tweet)
+            # I hate character encoding
+            tweet = unicode(" ".join(row[6:]).strip()) # Merge the rest if the list. In case the Tweet contained a '|' character
+
             if lon is not None and filter.isValidCSV(user_id, tweet):
                 tokens = extractor.extractTokens(tweet)
                 text = " ".join(tokens)
 
                 language = filter.checkLanguage(text)
-                if language == None:
+                if language is None:
                     continue
 
                 country = filter.getCountry(lat,lon)
-
 
                 if country not in set(['DE', 'AT', 'CH']):
                     continue
@@ -64,7 +65,6 @@ for row in reader:
                 m += 1
                 writer.writerow([
                     tweet_id,
-                    #jsonTweet[u'text'],
                     "",
                     text,
                     tokens_low,
