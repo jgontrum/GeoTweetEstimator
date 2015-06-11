@@ -20,6 +20,30 @@ class UnweightedEvaluator():
         return "Unweighted Evaluator"
 
 
+class InversedVarianceEvaluator2():
+    def __init__(self, pow=-1.0, sub=0.0, zerovariance = float(math.pow(1,6))):
+        self.zerovariance = zerovariance
+        self.pow = pow
+        self.sub = sub
+
+    def evaluate(self, token_data):
+        # token_data = list of tupels (token, variance, count, (lon, lat)) in linear order
+        coordinate_list = []
+        weight_list = []
+
+        for token, variance, count, coordinates in token_data:
+            coordinate_list.append(coordinates)
+            if variance == 0:
+                weight_list.append(self.zerovariance)
+            else:
+                weight_list.append(math.pow((variance * 100000 - self.sub),(self.pow)))
+
+        return (coordinate_list, weight_list)
+
+    def __str__(self):
+        return "Inversed variance (1/variance) Evaluator with weight for variance==0: " + str(self.zerovariance)
+
+
 class InversedVarianceEvaluator():
     def __init__(self, zerovariance = float(math.pow(1,6))):
         self.zerovariance = zerovariance
@@ -35,6 +59,27 @@ class InversedVarianceEvaluator():
                 weight_list.append(self.zerovariance)
             else:
                 weight_list.append(1.0/variance)
+
+        return (coordinate_list, weight_list)
+
+    def __str__(self):
+        return "Inversed variance (1/variance) Evaluator with weight for variance==0: " + str(self.zerovariance)
+
+class NegLogVarianceEvaluator():
+    def __init__(self, zerovariance = float(math.pow(1,6))):
+        self.zerovariance = zerovariance
+
+    def evaluate(self, token_data):
+        # token_data = list of tupels (token, variance, count, (lon, lat)) in linear order
+        coordinate_list = []
+        weight_list = []
+
+        for token, variance, count, coordinates in token_data:
+            coordinate_list.append(coordinates)
+            if variance == 0:
+                weight_list.append(self.zerovariance)
+            else:
+                weight_list.append(-1 * math.log10(variance*1000))
 
         return (coordinate_list, weight_list)
 

@@ -3,6 +3,7 @@
 __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 
 import sys
+import cPickle as pickle
 from Wrapper import DataFunctions
 
 if len(sys.argv) < 3:
@@ -10,4 +11,7 @@ if len(sys.argv) < 3:
     sys.exit(1)
 
 token_to_data = DataFunctions.pickleTrainingCorpus(sys.argv[1])
-clusters = DataFunctions.pickleClusters(sys.argv[2], token_to_data, 7)
+#clusters = DataFunctions.pickleClusters(sys.argv[2], pickle.load(open(sys.argv[1], 'rb')), 7)
+
+# for c in clusters:
+#     print c

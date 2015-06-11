@@ -39,6 +39,13 @@ class TweetFilter:
     def isValid(self, jsonTweet):
         return self.checkID(jsonTweet) and self.checkTokens(jsonTweet)
 
+    def isValidCSV(self, user_id, tweet):
+        if user_id not in self.bad_ids:
+            for badToken in self.bad_tokensRegEx.finditer(tweet):
+                return False
+            return True
+        return False
+
     def checkID(self, jsonTweet):
         if jsonTweet[u'user'][u'id'] in self.bad_ids:
             return False

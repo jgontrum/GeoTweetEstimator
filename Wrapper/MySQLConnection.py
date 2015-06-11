@@ -60,3 +60,7 @@ class MySQLConnectionWrapper:
     def getRowsRaw(self, columns, conditions):
         self.readCursor.execute('SELECT ' + columns + ' FROM ' + self.dbTable + " " + conditions)
         return self.readCursor
+
+    def getUserIDs(self):
+        self.readCursor.execute('SELECT DISTINCT `user_id` FROM ' + self.dbTable)
+        return self.readCursor

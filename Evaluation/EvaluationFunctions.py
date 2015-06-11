@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 from geopy.distance import vincenty
+from geopy.distance import great_circle
 import math
 
 # Move lon2, lat2 closer to the coordinates of lon1 lon2.
@@ -105,3 +106,4 @@ def getCluster(lon, lat, clusters):
             lowest_cluster = i
 
     return lowest_cluster
+

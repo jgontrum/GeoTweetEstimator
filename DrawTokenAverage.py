@@ -25,8 +25,12 @@ basemap = MapFunctions.prepareMap()
 
 coordinates_to_draw = [] # Coordinates that will be drawn to the map
 
-for (lon, lat), variance, count in token_to_data.itervalues():
-    if variance < float(sys.argv[3]):
+token_to_data_sorted = sorted(token_to_data.iteritems(), key=lambda x: x[1][1])
+n = len(token_to_data_sorted)
+
+
+for token, ((lon, lat), variance, count) in token_to_data_sorted[:int(n*float(sys.argv[3]))]:
+    if count < sys.argv[4]:
         coordinates_to_draw.append((lon, lat))
 
 # Draw coordinates to the map:
