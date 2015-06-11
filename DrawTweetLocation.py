@@ -38,10 +38,12 @@ colors =  ['firebrick', 'green', 'navy', 'yellow', 'slategray', 'plum',
 
 # Iterate over all tweets and split the tokenised texts.
 # Each token maps to a list of lon, lat tuples
-for lon, lat in database.getRows("`long`, `lat`"):
-    cluster = EvaluationFunctions.getCluster(lon, lat, clusters)
-    col = colors[cluster]
-    basemap.plot(lon, lat, '.', color = col, markeredgecolor=col, markersize=1, latlon=True)
+for lon, lat, tweet in database.getRows("`long`, `lat`, `tokenised_low`"):
+    if "frankfurt" in tweet:
+        #cluster = EvaluationFunctions.getCluster(lon, lat, clusters)
+        #col = colors[cluster]
+        col = 'firebrick'
+        basemap.plot(lon, lat, '.', color = col, markeredgecolor=col, markersize=1, latlon=True)
 
 # Draw the clusters
 for i in range(len(clusters)):

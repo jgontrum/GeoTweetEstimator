@@ -118,7 +118,7 @@ class CorpusEvaluator:
         return (lon_score, lat_score, location[0], location[1], distance)
 
 
-    def evaluateCorpus(self, noprint=False):
+    def evaluateCorpus(self, printmsg=False):
         distances = []
         valids = 0
         invalids = 0
@@ -156,7 +156,7 @@ class CorpusEvaluator:
                 valids += 1
 
         distances_np = np.asarray(distances, dtype=float)
-        if noprint:
+        if printmsg:
             print 'valid: ', valids, 'invalid: ', invalids
 
             print 'distance_match: ', distance_matches, 'distance_mismatches: ', distance_mismatches
