@@ -118,7 +118,7 @@ class CorpusEvaluator:
         return (lon_score, lat_score, location[0], location[1], distance)
 
 
-    def evaluateCorpus(self):
+    def evaluateCorpus(self, noprint=False):
         distances = []
         valids = 0
         invalids = 0
@@ -156,15 +156,16 @@ class CorpusEvaluator:
                 valids += 1
 
         distances_np = np.asarray(distances, dtype=float)
-        print 'valid: ', valids, 'invalid: ', invalids
+        if noprint:
+            print 'valid: ', valids, 'invalid: ', invalids
 
-        print 'distance_match: ', distance_matches, 'distance_mismatches: ', distance_mismatches
-        if distance_matches + distance_mismatches > 0:
-            print 'distance_ratio: ', str(float(distance_matches) / (distance_matches + distance_mismatches))
+            print 'distance_match: ', distance_matches, 'distance_mismatches: ', distance_mismatches
+            if distance_matches + distance_mismatches > 0:
+                print 'distance_ratio: ', str(float(distance_matches) / (distance_matches + distance_mismatches))
 
-        print 'cluster_matches: ', cluster_matches, 'cluster_mismatches: ', cluster_mismatches
-        if cluster_matches + cluster_mismatches > 0:
-            print 'cluster_ratio: ', str(float(cluster_matches) / (cluster_matches + cluster_mismatches))
+            print 'cluster_matches: ', cluster_matches, 'cluster_mismatches: ', cluster_mismatches
+            if cluster_matches + cluster_mismatches > 0:
+                print 'cluster_ratio: ', str(float(cluster_matches) / (cluster_matches + cluster_mismatches))
 
         # print "not used: ", self.tmpscore
         #print tabulate(real_to_calc_matches, tablefmt="latex",headers=range(n))
@@ -174,5 +175,5 @@ class CorpusEvaluator:
         if valids > 0:
             return  (np.mean(distances_np), np.median(distances_np), float(cluster_matches) / (cluster_matches + cluster_mismatches))
         else:
-            return  (float('inf') , float('inf'))
+            return  (float('inf') , float('inf'), float('inf'))
 
