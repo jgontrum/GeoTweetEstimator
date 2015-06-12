@@ -3,6 +3,7 @@
 __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 from geopy.distance import vincenty
 import math
+import itertools
 
 """
 This file provides a lot of useful functions that are used in the evaluation proces.
@@ -112,3 +113,8 @@ def getCluster(lon, lat, clusters):
 
     return lowest_cluster
 
+#produces 2-gram cooocs
+def getCoOccurrences(l):
+    for i in range(1,len(l)):
+        for x in itertools.chain(zip(l,l[i:]),zip(l[i:],l)):
+            yield x

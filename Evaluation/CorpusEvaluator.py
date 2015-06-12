@@ -61,7 +61,7 @@ class CorpusEvaluator:
         text_pos = 1890000
         
         # Look up the data for each token in the tweet
-        for token in tokens:
+        for token in EvaluationFunctions.getCoOccurrences(tokens):
             if token not in self.token_data:
                 failed += 1
                 if self.draw:

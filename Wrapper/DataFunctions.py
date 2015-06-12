@@ -24,7 +24,7 @@ def pickleTrainingCorpus(filename):
     for tokens, lat, lon in database.getRows("`tokenised_low`, `lat`, `long`"):
         tweet_coordinates.append((lon, lat))
         cartesian = EvaluationFunctions.convertLatLongToCartesian(lon, lat)
-        for token in tokens.split():
+        for token in EvaluationFunctions.getCoOccurrences(tokens.split()):
             token_distribution_cart.setdefault(token, []).append(cartesian)
 
     for token, coordinates_of_tuple in token_distribution_cart.iteritems():
