@@ -115,6 +115,8 @@ def getCluster(lon, lat, clusters):
 
 #produces 2-gram cooocs
 def getCoOccurrences(l):
+    for x in zip(l,l):
+        yield x
     for i in range(1,len(l)):
         for x in itertools.chain(zip(l,l[i:]),zip(l[i:],l)):
             yield x
