@@ -54,7 +54,7 @@ class CorpusEvaluator:
     def evaluateTweet(self, tokens, location):
         token_data_here = []
 
-        failed = 0
+        valid = 0
         if self.draw:
             basemap = MapFunctions.prepareMap()
 
@@ -62,8 +62,8 @@ class CorpusEvaluator:
         
         # Look up the data for each token in the tweet
         for token in EvaluationFunctions.getCoOccurrences(tokens):
+
             if token not in self.token_data:
-                failed += 1
                 if self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | (fail)', color='grey', fontsize=6)
                     text_pos -= 42000
@@ -73,6 +73,7 @@ class CorpusEvaluator:
             lon, lat = coordinates
 
             if variance < self.variance_threshold:
+                valid += 1
                 # 0-hypothese
                 if self.null:
                     token = self.token_data.keys()[randint(0,len(self.token_data.keys()))]
@@ -87,14 +88,13 @@ class CorpusEvaluator:
                 token_data_here.append((token, variance, count, coordinates))
 
             else:
-                failed += 1
                 if self.draw:
                     plt.text(10000, text_pos,   token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count),color='grey', fontsize=6)
                     text_pos -= 40000
                     current_color = 'gray'
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.1)
 
-        if float(len(tokens) - failed) == 0.0:
+        if valid > 0:
             plt.clf()
             return None
 
