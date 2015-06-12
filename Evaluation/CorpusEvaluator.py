@@ -94,7 +94,7 @@ class CorpusEvaluator:
                     current_color = 'gray'
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.1)
 
-        if valid > 0:
+        if valid == 0:
             plt.clf()
             return None
 

@@ -47,4 +47,4 @@ for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
     print ""
     print threshold
-    print dev_corpus.evaluateCorpus()
+    print dev_corpus.evaluateCorpus(printmsg=True)
