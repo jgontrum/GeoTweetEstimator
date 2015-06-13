@@ -10,6 +10,7 @@ from Evaluation import EvaluationFunctions
 from random import randint
 from tabulate import tabulate
 import numpy as np
+import itertools
 import math
 
 class CorpusEvaluator:
@@ -69,7 +70,7 @@ class CorpusEvaluator:
                     text_pos -= 42000
                 continue
 
-            coordinates, variance, count = self.token_data[token]
+            coordinates, variance, count, mean, covariance = self.token_data[token]
             lon, lat = coordinates
             print token, variance
             if variance < self.variance_threshold:
@@ -85,7 +86,7 @@ class CorpusEvaluator:
                     current_color = EvaluationFunctions.getColorForValue(variance)
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.7)
 
-                token_data_here.append((token, variance, count, coordinates))
+                token_data_here.append((token, variance, count, coordinates, mean, covariance))
 
             else:
                 if self.draw:
@@ -97,10 +98,19 @@ class CorpusEvaluator:
         if valid == 0:
             plt.clf()
             return None
+
+        for (mean1, covar1), (mean2, covar2) in itertools.combinations([(mean, covar) for (token, variance, count, coordinates, mean, covar) in token_data_here ]):
+            # get x0:
+            x0 = np.array(EvaluationFunctions.getUnweightedMidpoint([tuple(mean1),tuple(mean2)]))
+            print EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
+
+
+        """
         # Generate the data for the weighted midpoint
-        coordinate_list, weight_list = self.evaluator.evaluate(token_data_here)
+        #coordinate_list, weight_list = self.evaluator.evaluate(token_data_here)
 
         # Calculate the midpoint
+
         lon_score, lat_score = EvaluationFunctions.getWeightedMidpoint(coordinate_list, weight_list)
 
         distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
@@ -118,8 +128,10 @@ class CorpusEvaluator:
             plt.text(10000,80000, 'Threshold: ' + str(self.variance_threshold))
             plt.savefig('img/tweet_' + str(self.variance_threshold) + "_" + str(self.i) + ".png", format='png')
             plt.clf()
+        """
+        #return (lon_score, lat_score, location[0], location[1], distance)
 
-        return (lon_score, lat_score, location[0], location[1], distance)
+        return (0,0,0,0,0)
 
 
     def evaluateCorpus(self, printmsg=False):

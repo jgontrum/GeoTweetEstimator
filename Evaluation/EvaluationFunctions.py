@@ -101,6 +101,9 @@ def getWeightedMidpoint(coordinates, weights):
     ret =  convertCartesianToLatLong(x_sum / weight_sum, y_sum / weight_sum, z_sum / weight_sum)
     return ret
 
+def getUnweightedMidpoint(coordinates):
+    nulls = [0 for i in coordinates]
+    return getWeightedMidpoint(coordinates, nulls)
 
 def getCluster(lon, lat, clusters):
     lowest_value = float('inf')
