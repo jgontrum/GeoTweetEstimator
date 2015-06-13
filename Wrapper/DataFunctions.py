@@ -34,12 +34,12 @@ def pickleTrainingCorpus(filename):
             np_list = np.asarray(coordinates_of_tuple, dtype=float)
 
             # Calculate the mean values for
-            mean = np.mean(np_list, axis=0)
-            (mean_x, mean_y, mean_z) = tuple(mean)
+            mean = tuple(np.mean(np_list, axis=0))
+            (mean_x, mean_y, mean_z) = mean
 
             (median_x, median_y, median_z) = tuple(np.median(np_list, axis=0))
 
-            covariance = np.cov(np_list)
+            covariance = np.cov(np_list).tolist()
 
             variance_num = 0
             for (x, y, z) in coordinates_of_tuple:

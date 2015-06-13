@@ -101,8 +101,8 @@ class CorpusEvaluator:
 
         for (mean1, covar1), (mean2, covar2) in itertools.combinations([(mean, covar) for (token, variance, count, coordinates, mean, covar) in token_data_here ]):
             # get x0:
-            x0 = np.array(EvaluationFunctions.getUnweightedMidpoint([tuple(mean1),tuple(mean2)]))
-            print EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
+            x0 = np.array(EvaluationFunctions.getUnweightedMidpoint([mean1,mean2]))
+            print EvaluationFunctions.get_crossing(np.asarray(mean1), np.asarray(covar1), np.asarray(mean2), np.asarray(covar2),x0)
 
 
         """
