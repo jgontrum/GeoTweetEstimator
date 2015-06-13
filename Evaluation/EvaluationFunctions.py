@@ -4,6 +4,8 @@ __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 from geopy.distance import vincenty
 import math
 import itertools
+import numpy as np
+import scipy
 
 """
 This file provides a lot of useful functions that are used in the evaluation proces.
@@ -117,3 +119,24 @@ def getCluster(lon, lat, clusters):
 def getCoOccurrences(l):
     for x in itertools.combinations_with_replacement(l,1):
         yield x
+
+def norm_pdf_multivariate(x, mu, sigma):
+    size = len(x)
+    if size == len(mu) and (size, size) == sigma.shape:
+        det = np.linalg.det(sigma)
+        if det == 0:
+            raise NameError("The covariance matrix can't be singular")
+
+        norm_const = 1.0/ ( math.pow((2*np.pi),float(size)/2) * math.pow(det,1.0/2) )
+        x_mu = np.matrix(x - mu)
+        inv = sigma.I
+        result = math.pow(math.e, -0.5 * (x_mu * inv * x_mu.T))
+        return norm_const * result
+    else:
+        raise NameError("The dimensions of the input don't match")
+
+def get_crossing(mu1, sigma1, mu2, sigma2, x0):
+    coord = scipy.optimise.fsolve(lambda x : norm_pdf_multivariate(x. mu1, sigma1) - norm_pdf_multivariate(x, mu2, sigma2),x0)
+    # get score
+    score = norm_pdf_multivariate(coord, mu1, sigma1)
+    return (coord, score)

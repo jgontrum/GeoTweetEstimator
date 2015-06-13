@@ -34,8 +34,8 @@ def pickleTrainingCorpus(filename):
             np_list = np.asarray(coordinates_of_tuple, dtype=float)
 
             # Calculate the mean values for
-            mean = tuple(np.mean(np_list, axis=0))
-            (mean_x, mean_y, mean_z) = mean
+            mean = np.mean(np_list, axis=0)
+            (mean_x, mean_y, mean_z) = tuple(mean)
 
             (median_x, median_y, median_z) = tuple(np.median(np_list, axis=0))
 
