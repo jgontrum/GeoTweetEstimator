@@ -64,14 +64,14 @@ class CorpusEvaluator:
         for token in EvaluationFunctions.getCoOccurrences(tokens):
 
             if token not in self.token_data:
-                if self.draw:
+                if False: #self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | (fail)', color='grey', fontsize=6)
                     text_pos -= 42000
                 continue
 
             coordinates, variance, count = self.token_data[token]
             lon, lat = coordinates
-
+            print token, variance
             if variance < self.variance_threshold:
                 valid += 1
                 # 0-hypothese
@@ -80,7 +80,7 @@ class CorpusEvaluator:
                     coordinates, variance, count = self.token_data[token]
 
                 if self.draw:
-                    plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count), color='black', fontsize=6)
+                    #plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count), color='black', fontsize=6)
                     text_pos -= 42000
                     current_color = EvaluationFunctions.getColorForValue(variance)
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.7)
@@ -89,7 +89,7 @@ class CorpusEvaluator:
 
             else:
                 if self.draw:
-                    plt.text(10000, text_pos,   token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count),color='grey', fontsize=6)
+                    #plt.text(10000, text_pos,   token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count),color='grey', fontsize=6)
                     text_pos -= 40000
                     current_color = 'gray'
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.1)
@@ -97,7 +97,6 @@ class CorpusEvaluator:
         if valid == 0:
             plt.clf()
             return None
-
         # Generate the data for the weighted midpoint
         coordinate_list, weight_list = self.evaluator.evaluate(token_data_here)
 
@@ -105,6 +104,11 @@ class CorpusEvaluator:
         lon_score, lat_score = EvaluationFunctions.getWeightedMidpoint(coordinate_list, weight_list)
 
         distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
+        
+        print " ".join(tokens)
+        print distance
+        print valid
+        print ""
 
         if self.draw:
             basemap.plot(location[0], location[1], '^', mfc='none' , markeredgecolor='black', latlon=True, alpha=1)
@@ -135,7 +139,7 @@ class CorpusEvaluator:
             real_to_calc_matches[i][0] = i
 
        # self.n = 3
-        for self.i in range(0,self.n):
+        for self.i in [93]: #range(0,self.n):
             values = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
             if values is None:
                 invalids += 1

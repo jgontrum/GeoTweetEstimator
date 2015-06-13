@@ -12,7 +12,7 @@ from Evaluation import EvaluationFunctions
 def pickleTrainingCorpus(filename):
     token_to_data = {}    #< maps a token to a tuple of its coordinates,  variance and its count
                           #< ((lon, lat), variance, count)
-    COUNT_THRESHOLD = 1
+    COUNT_THRESHOLD = 0
 
     # Make connection
     database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TRAIN")

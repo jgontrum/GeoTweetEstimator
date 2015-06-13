@@ -115,5 +115,5 @@ def getCluster(lon, lat, clusters):
 
 #produces 2-gram cooocs
 def getCoOccurrences(l):
-    for x in itertools.combinations_with_replacement(l,3):
+    for x in itertools.combinations_with_replacement(l,1):
         yield x

@@ -46,7 +46,7 @@ thresholds = range(0,100,1)
 for threshold in thresholds:
     use_threshold = variance_data[int(len(variance_data) * (threshold/100.0))]
     dev_corpus.setVarianceThreshold(use_threshold)
-    #print threshold, ",", dev_corpus.evaluateCorpus()[0]
-    print threshold, ",", dev_corpus.evaluateCorpus()[3]
+    print threshold, ",", dev_corpus.evaluateCorpus()[0]
+    #print threshold, ",", dev_corpus.evaluateCorpus()[3]
 
 

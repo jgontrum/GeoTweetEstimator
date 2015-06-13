@@ -27,7 +27,7 @@ if len(sys.argv) < 3 :
 clusters = pickle.load(open(sys.argv[1], 'rb')) # list of (lon, lat)
 
 # Make connection
-database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TRAIN")
+database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="All")
 
 # Prepare map
 basemap = MapFunctions.prepareMap()
@@ -39,14 +39,14 @@ colors =  ['firebrick', 'green', 'navy', 'yellow', 'slategray', 'plum',
 # Iterate over all tweets and split the tokenised texts.
 # Each token maps to a list of lon, lat tuples
 for lon, lat, tweet in database.getRows("`long`, `lat`, `tokenised_low`"):
-    if tweet.count("und") > 0:
+    if tweet.count("schrippe") > 0:
         #cluster = EvaluationFunctions.getCluster(lon, lat, clusters)
         #col = colors[cluster]
         col = 'lightskyblue'
         basemap.plot(lon, lat, '.', color = col, markeredgecolor=col, markersize=1, latlon=True)
 
 for lon, lat, tweet in database.getRows("`long`, `lat`, `tokenised_low`"):
-    if tweet.count("potsdam") > 0:
+    if tweet.count("wecke") > 0:
         #cluster = EvaluationFunctions.getCluster(lon, lat, clusters)
         #col = colors[cluster]
         col = 'red'
