@@ -11,7 +11,7 @@ from Evaluation import EvaluationFunctions
 
 def pickleTrainingCorpus(filename):
     token_to_data = {}    #< maps a token to a tuple of its coordinates,  variance and its count
-                          #< ((lon, lat), variance, count)
+                          #< ((lon, lat), variance, count, (meanx, meany, meanz), covar_matrix)
     COUNT_THRESHOLD = 0
 
     # Make connection
@@ -34,7 +34,12 @@ def pickleTrainingCorpus(filename):
             np_list = np.asarray(coordinates_of_tuple, dtype=float)
 
             # Calculate the mean values for
-            (mean_x, mean_y, mean_z) = tuple(np.mean(np_list, axis=0))
+            mean = tuple(np.mean(np_list, axis=0))
+            (mean_x, mean_y, mean_z) = mean
+
+            (median_x, median_y, median_z) = tuple(np.median(np_list, axis=0))
+
+            covariance = np.cov(np_list)
 
             variance_num = 0
             for (x, y, z) in coordinates_of_tuple:
@@ -44,10 +49,9 @@ def pickleTrainingCorpus(filename):
             variance = variance_num / count
 
             # calculate the median
-            (mean_x, mean_y, mean_z) = tuple(np.median(np_list, axis=0))
 
 
-            token_to_data[token] = (EvaluationFunctions.convertCartesianToLatLong(mean_x, mean_y, mean_z), variance, count)
+            token_to_data[token] = (EvaluationFunctions.convertCartesianToLatLong(median_x, median_y, median_z), variance, count, mean, covariance)
 
     pickle.dump(token_to_data, open(filename, 'wb'))
     return tweet_coordinates
@@ -59,3 +63,4 @@ def pickleClusters(filename, coordinate_list, k):
     kmeans.fit(data)
     pickle.dump(kmeans.cluster_centers_, open(filename, 'wb'))
     return list(kmeans.cluster_centers_)
+
