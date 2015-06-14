@@ -11,6 +11,7 @@ import base64
 from sklearn.cluster import KMeans
 from Evaluation import EvaluationFunctions
 import unicodecsv
+import gzip
 
 def mysqlTrainingCorpus(filenamecsv, filenamesig):
     COUNT_THRESHOLD = 2
@@ -39,7 +40,8 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
         for token in EvaluationFunctions.getCoOccurrences(tokens.split()):
             token_distribution_cart.setdefault(token, []).append(cartesian)
 
-    writer = unicodecsv.writer(open(filenamecsv, 'wb'), delimiter=',', quotechar='"',escapechar='\\', quoting=unicodecsv.QUOTE_ALL, encoding='utf-8')
+    csvfile = gzip.open(filenamecsv + ".gz", "wb")
+    writer = unicodecsv.writer(csvfile, delimiter=',', quotechar='"',escapechar='\\', quoting=unicodecsv.QUOTE_ALL, encoding='utf-8')
 
     for token, coordinates_of_tuple in token_distribution_cart.iteritems():
         count = len(coordinates_of_tuple)
@@ -54,11 +56,6 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
             (median_x, median_y, median_z) = tuple(np.median(np_list, axis=0))
 
-            covariance = None
-            if token in good_tokens:
-                covariance = np.cov(np_list)
-            else:
-                mean = None
 
             variance_num = 0
             for (x, y, z) in coordinates_of_tuple:
@@ -67,8 +64,13 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
             # Calculate the variance
             variance = variance_num / count
             lon, lat = EvaluationFunctions.convertCartesianToLatLong(median_x, median_y, median_z)
-            writer.writerow([tokenID,"|".join(list(token)),lon, lat, variance, count, base64.b64encode(pickle.dumps(mean)), base64.b64encode(pickle.dumps(covariance))])
+            if token in good_tokens:
+                covariance = np.cov(np_list)
+                writer.writerow([tokenID,"|".join(list(token)),lon, lat, variance, count, base64.b64encode(pickle.dumps(mean)), base64.b64encode(pickle.dumps(covariance))])
+            else:
+                writer.writerow([tokenID,"",lon, lat, variance, count,"",""])
 
+    csvfile.close()
     pickle.dump(signature, open(filenamesig, 'wb'))
     return tweet_coordinates
 
