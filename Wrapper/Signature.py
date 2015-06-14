@@ -11,7 +11,7 @@ class Signature():
     def add(self, token):
         if token not in self.s2i:
             self.s2i[token] = self.next
-            self.i2s[self.next] = token
+            self.i2s.append(token)
             self.next += 1
             return self.next - 1
         else:
