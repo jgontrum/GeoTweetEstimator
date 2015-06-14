@@ -13,7 +13,7 @@ from Evaluation import EvaluationFunctions
 import unicodecsv
 
 def mysqlTrainingCorpus(filenamecsv, filenamesig):
-    COUNT_THRESHOLD = 0
+    COUNT_THRESHOLD = 2
     signature = Signature.Signature()
     # Make connection
     database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TRAIN")
