@@ -52,7 +52,7 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
             # Calculate the variance
             variance = variance_num / count
             lon, lat = EvaluationFunctions.convertCartesianToLatLong(median_x, median_y, median_z)
-            writer.writerow([tokenID,token,lon, lat, variance, count, base64.b64encode(pickle.dumps(mean)), base64.b64encode(pickle.dumps(covariance))])
+            writer.writerow([tokenID,"|".join(list(token)),lon, lat, variance, count, base64.b64encode(pickle.dumps(mean)), base64.b64encode(pickle.dumps(covariance))])
 
     pickle.dump(signature, open(filenamesig, 'wb'))
     return tweet_coordinates
