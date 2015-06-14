@@ -22,10 +22,10 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
     good_tokens = []
     for tokens in database2.getRows("`tokenised_low`"):
-        for token in tokens.split:
+        for token in tokens.split():
             good_tokens.append(token)
     for tokens in database3.getRows("`tokenised_low`"):
-        for token in tokens.split:
+        for token in tokens.split():
             good_tokens.append(token)
 
     good_tokens = set(good_tokens)
