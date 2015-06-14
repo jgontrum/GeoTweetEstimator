@@ -38,12 +38,12 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
             np_list = np.asarray(coordinates_of_tuple, dtype=float)
 
             # Calculate the mean values for
-            mean = tuple(np.mean(np_list, axis=0))
-            (mean_x, mean_y, mean_z) = mean
+            mean = np.mean(np_list, axis=0)
+            (mean_x, mean_y, mean_z) =tuple( mean)
 
             (median_x, median_y, median_z) = tuple(np.median(np_list, axis=0))
 
-            covariance = np.cov(np_list).tolist()
+            covariance = np.cov(np_list)
 
             variance_num = 0
             for (x, y, z) in coordinates_of_tuple:
@@ -51,8 +51,8 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
             # Calculate the variance
             variance = variance_num / count
-
-            writer.writerow([tokenID,token,EvaluationFunctions.convertCartesianToLatLong(median_x, median_y, median_z), variance, count, mean, covariance])
+            lon, lat = EvaluationFunctions.convertCartesianToLatLong(median_x, median_y, median_z)
+            writer.writerow([tokenID,token,lon, lat, variance, count, base64.b64encode(pickle.dumps(mean)), base64.b64encode(pickle.dumps(covariance))])
 
     pickle.dump(signature, open(filenamesig, 'wb'))
     return tweet_coordinates
