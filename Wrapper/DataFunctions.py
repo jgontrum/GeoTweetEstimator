@@ -30,6 +30,8 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
             good_tokens.append(token)
 
     good_tokens = set(good_tokens)
+
+    print len(good_tokens)
     # Iterate over all tweets and split the tokenised texts.
     # Each token maps to a list of lon, lat tuples
     token_distribution_cart = {}
@@ -45,7 +47,8 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
     for token, coordinates_of_tuple in token_distribution_cart.iteritems():
         count = len(coordinates_of_tuple)
-        if count > COUNT_THRESHOLD:
+        if count > COUNT_THRESHOLD and token in good_tokens:
+            print token
             tokenID = signature.add(token)
             # Convert coordinate list to numpy array
             np_list = np.asarray(coordinates_of_tuple, dtype=float)
@@ -56,7 +59,6 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
             (median_x, median_y, median_z) = tuple(np.median(np_list, axis=0))
 
-
             variance_num = 0
             for (x, y, z) in coordinates_of_tuple:
                 variance_num += (x - mean_x)**2 + (y - mean_y)**2 + (z - mean_z)**2
@@ -64,11 +66,9 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
             # Calculate the variance
             variance = variance_num / count
             lon, lat = EvaluationFunctions.convertCartesianToLatLong(median_x, median_y, median_z)
-            if token in good_tokens:
-                covariance = np.cov(np_list)
-                writer.writerow([tokenID,"|".join(list(token)),lon, lat, variance, count, base64.b64encode(pickle.dumps(mean)), base64.b64encode(pickle.dumps(covariance))])
-            else:
-                writer.writerow([tokenID,"",lon, lat, variance, count,"",""])
+
+            writer.writerow([tokenID,"|".join(list(token)),lon, lat, variance, count, base64.b64encode(pickle.dumps(mean)), base64.b64encode(pickle.dumps(covariance))])
+
 
     csvfile.close()
     pickle.dump(signature, open(filenamesig, 'wb'))
