@@ -47,7 +47,7 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
     for token, coordinates_of_tuple in token_distribution_cart.iteritems():
         count = len(coordinates_of_tuple)
-        if count > COUNT_THRESHOLD and token in good_tokens:
+        if count > COUNT_THRESHOLD:
             print token
             tokenID = signature.add(token)
             # Convert coordinate list to numpy array
@@ -66,9 +66,30 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
             # Calculate the variance
             variance = variance_num / count
             lon, lat = EvaluationFunctions.convertCartesianToLatLong(median_x, median_y, median_z)
-            covariance = np.cov(np_list).tolist()
 
-            writer.writerow([tokenID,"|".join(list(token)),lon, lat, variance, count, base64.b64encode(pickle.dumps(mean)), base64.b64encode(pickle.dumps(covariance))])
+            covariance = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]]
+            if token in good_tokens:
+                covariance = np.cov(np_list).tolist()
+
+            writer.writerow([
+                tokenID,"|".join(list(token)),
+                lon,
+                lat,
+                variance,
+                count,
+                mean_x,
+                mean_y,
+                mean_z,
+                covariance[0][0],
+                covariance[0][1],
+                covariance[0][2],
+                covariance[1][0],
+                covariance[1][1],
+                covariance[1][2],
+                covariance[2][0],
+                covariance[2][1],
+                covariance[2][2]
+            ])
 
 
     csvfile.close()
