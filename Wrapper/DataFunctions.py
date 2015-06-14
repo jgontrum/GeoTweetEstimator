@@ -66,6 +66,7 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
             # Calculate the variance
             variance = variance_num / count
             lon, lat = EvaluationFunctions.convertCartesianToLatLong(median_x, median_y, median_z)
+            covariance = np.cov(np_list).tolist()
 
             writer.writerow([tokenID,"|".join(list(token)),lon, lat, variance, count, base64.b64encode(pickle.dumps(mean)), base64.b64encode(pickle.dumps(covariance))])
 
