@@ -23,7 +23,7 @@ if len(sys.argv) < 3:
     sys.exit(1)
 
 if len(sys.argv) == 2: # create only the tokendata
-    token_to_data = DataFunctions.pickleTrainingCorpus(sys.argv[1], sys.argv[2])
+    token_to_data = DataFunctions.mysqlTrainingCorpus(sys.argv[1], sys.argv[2])
 else:
-    token_to_data = DataFunctions.pickleTrainingCorpus(sys.argv[1])
-    clusters = DataFunctions.pickleClusters(sys.argv[2], token_to_data, 7)
+    token_to_data = DataFunctions.mysqlTrainingCorpus(sys.argv[1], sys.argv[2])
+    clusters = DataFunctions.pickleClusters(sys.argv[3], token_to_data, 7)
