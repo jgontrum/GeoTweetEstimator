@@ -17,7 +17,18 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
     signature = Signature.Signature()
     # Make connection
     database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TRAIN")
+    database2 = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TEST")
+    database3 = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="DEV")
 
+    good_tokens = []
+    for tokens in database2.getRows("`tokenised_low`"):
+        for token in tokens.split:
+            good_tokens.append(token)
+    for tokens in database3.getRows("`tokenised_low`"):
+        for token in tokens.split:
+            good_tokens.append(token)
+
+    good_tokens = set(good_tokens)
     # Iterate over all tweets and split the tokenised texts.
     # Each token maps to a list of lon, lat tuples
     token_distribution_cart = {}
@@ -39,11 +50,15 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
             # Calculate the mean values for
             mean = np.mean(np_list, axis=0)
-            (mean_x, mean_y, mean_z) =tuple( mean)
+            (mean_x, mean_y, mean_z) = tuple(mean)
 
             (median_x, median_y, median_z) = tuple(np.median(np_list, axis=0))
 
-            covariance = np.cov(np_list)
+            covariance = None
+            if token in good_tokens:
+                covariance = np.cov(np_list)
+            else:
+                mean = None
 
             variance_num = 0
             for (x, y, z) in coordinates_of_tuple:
