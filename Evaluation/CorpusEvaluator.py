@@ -58,7 +58,6 @@ class CorpusEvaluator:
 
                     covar_matrix = np.asarray([[covarA0, covarA1, covarA2],[covarB0, covarB1, covarB2],[covarC0, covarC1, covarC2]])
                     mean = np.asarray([meanx, meany, meanz])
-                    print token_id
                     self.token_data[int(token_id)] = {"location" : (lon, lat),
                                            "variance" : variance,
                                            "count" : count,
@@ -90,7 +89,7 @@ class CorpusEvaluator:
         for token in EvaluationFunctions.getCoOccurrences(tokens):
             token_id = self.signature.add(token)
             print "!" , token_id
-            if token not in self.token_data:
+            if token_id not in self.token_data:
                 if False: #self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | (fail)', color='grey', fontsize=6)
                     text_pos -= 42000
