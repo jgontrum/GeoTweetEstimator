@@ -117,9 +117,9 @@ class CorpusEvaluator:
         if valid == 0:
             plt.clf()
             return None
+
         mcvlist = [(mean, covar) for (token, variance, count, coordinates, mean, covar) in token_data_here ]
-        print mcvlist
-        for (mean1, covar1), (mean2, covar2) in itertools.combinations(mcvlist):
+        for (mean1, covar1), (mean2, covar2) in itertools.combinations(mcvlist, 2):
             # get x0:
             x0 = (mean1 + mean2) / 2
             print EvaluationFunctions.get_crossing(np.asarray(mean1), np.asarray(covar1), np.asarray(mean2), np.asarray(covar2),x0)
