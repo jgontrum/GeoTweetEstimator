@@ -122,7 +122,7 @@ class CorpusEvaluator:
         for (mean1, covar1), (mean2, covar2) in itertools.combinations(mcvlist, 2):
             # get x0:
             x0 = (mean1 + mean2) / 2
-            print EvaluationFunctions.get_crossing(np.asarray(mean1), np.asarray(covar1), np.asarray(mean2), np.asarray(covar2),x0)
+            print EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
 
 
         """
