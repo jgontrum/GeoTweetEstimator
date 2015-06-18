@@ -132,8 +132,10 @@ def norm_pdf_multivariate(x, mu, sigma):
 
         a = (2*np.pi)
         b = float(size)/2
-        
-        d = ( math.pow(a,b) * math.pow(det,1.0/2) )
+
+        x = math.pow(a,b)
+        y = math.pow(det,0.5)
+        d = ( x *  y )
         print d
         norm_const = 1.0/ d
         x_mu = np.matrix(x - mu)
