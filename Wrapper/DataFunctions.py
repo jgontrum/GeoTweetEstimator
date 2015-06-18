@@ -12,8 +12,10 @@ from sklearn.cluster import KMeans
 from Evaluation import EvaluationFunctions
 import unicodecsv
 import gzip
+import gc
 
 def mysqlTrainingCorpus(filenamecsv, filenamesig):
+    log = open("log.txt", "w")
     COUNT_THRESHOLD = 2
     signature = Signature.Signature()
     # Make connection
@@ -44,13 +46,16 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
     csvfile = gzip.open(filenamecsv + ".gz", "wb")
     writer = unicodecsv.writer(csvfile, delimiter=',', quotechar='"',escapechar='\\', quoting=unicodecsv.QUOTE_ALL, encoding='utf-8')
-
+    
+    pickle.dump(token_distribution_cart, open("Data/rawtokens.pikle","wb"))
+    
     for token, coordinates_of_tuple in token_distribution_cart.iteritems():
         count = len(coordinates_of_tuple)
         if count > COUNT_THRESHOLD:
-            print token
             tokenID = signature.add(token)
             # Convert coordinate list to numpy array
+            if count > 20000:
+                coordinates_of_tuple = coordinates_of_tuple[:20000]
             np_list = np.asarray(coordinates_of_tuple, dtype=float)
 
             # Calculate the mean values for
@@ -69,6 +74,8 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
             covariance = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]]
             if token in good_tokens:
+                log.write(str(count) + "," + token[0] + "\n")
+                log.flush()
                 covariance = np.cov(np_list).tolist()
 
             writer.writerow([
@@ -90,8 +97,14 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
                 covariance[2][1],
                 covariance[2][2]
             ])
+            del covariance
+            del variance
+            del mean
+            del np_list
+            if count > 10000:
+                gc.collect()
 
-
+    log.close()
     csvfile.close()
     pickle.dump(signature, open(filenamesig, 'wb'))
     return tweet_coordinates
