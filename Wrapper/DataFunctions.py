@@ -43,12 +43,15 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
         cartesian = EvaluationFunctions.convertLatLongToCartesian(lon, lat)
         for token in EvaluationFunctions.getCoOccurrences(tokens.split()):
             token_distribution_cart.setdefault(token, []).append(cartesian)
-
+            signature.add(token)
+    
+    pickle.dump(token_distribution_cart, open("Data/rawtokens.pickle","wb"))
+    pickle.dump(signature, open(filenamesig, 'wb'))
+    
     csvfile = gzip.open(filenamecsv + ".gz", "wb")
     writer = unicodecsv.writer(csvfile, delimiter=',', quotechar='"',escapechar='\\', quoting=unicodecsv.QUOTE_ALL, encoding='utf-8')
-    
-    pickle.dump(token_distribution_cart, open("Data/rawtokens.pikle","wb"))
-    
+    return 
+
     for token, coordinates_of_tuple in token_distribution_cart.iteritems():
         count = len(coordinates_of_tuple)
         if count > COUNT_THRESHOLD:
@@ -106,7 +109,6 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
     log.close()
     csvfile.close()
-    pickle.dump(signature, open(filenamesig, 'wb'))
     return tweet_coordinates
 
 def pickleTrainingCorpus(filename):
