@@ -33,7 +33,7 @@ clusters = pickle.load(open(sys.argv[2], 'rb')) #<
 
 token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
 variances = []
-for var in token_db.getTokenInfo(ids=None, columns="`variance"):
+for var in token_db.getTokenInfo(ids=None, columns="`variance`"):
     variances += var
 
 variance_data = list(sorted(variances))
