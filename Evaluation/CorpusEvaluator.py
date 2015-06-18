@@ -87,7 +87,7 @@ class CorpusEvaluator:
         
         # Look up the data for each token in the tweet
         for token in EvaluationFunctions.getCoOccurrences(tokens):
-            token_id = self.signature.get(token)
+            token_id = self.signature.add(token)
             if token not in self.token_data:
                 if False: #self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | (fail)', color='grey', fontsize=6)
