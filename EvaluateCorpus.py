@@ -6,6 +6,8 @@ import sys
 from Evaluation import CorpusEvaluator
 import cPickle as pickle
 from Evaluation import Weighting
+from Wrapper import MySQLConnection
+import os
 
 """
 Evaluate the corpus. This is where the results are generated ;)
@@ -26,15 +28,18 @@ if len(sys.argv) <= 2:
     sys.exit(1)
 
 """ LOAD DATA """
-token_to_data = pickle.load(open(sys.argv[1], 'rb')) #< ((lon, lat), variance, count)
+signature = pickle.load(open(sys.argv[1], 'rb'))
 clusters = pickle.load(open(sys.argv[2], 'rb')) #<
 
+token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
+variances = []
+for var in token_db.getTokenInfo(ids=None, columns="`variance"):
+    variances += var
 
-variance_data = list(sorted([var for (x, var, y) in token_to_data.values()]))
+variance_data = list(sorted(variances))
 
 """ EVALUATE """
-dev_corpus = CorpusEvaluator.CorpusEvaluator(corpus='DEV')
-dev_corpus.setData(token_to_data, clusters, null=False)
+dev_corpus = CorpusEvaluator.CorpusEvaluator(signature=signature, clusters=clusters, corpus='DEV')
 dev_corpus.setDistanceThreshold(200)
 
 # Load the evaluator:
