@@ -5,7 +5,7 @@ from geopy.distance import vincenty
 import math
 import itertools
 import numpy as np
-import scipy
+from scipy import optimize
 
 """
 This file provides a lot of useful functions that are used in the evaluation proces.
@@ -139,7 +139,7 @@ def norm_pdf_multivariate(x, mu, sigma):
         raise NameError("The dimensions of the input don't match")
 
 def get_crossing(mu1, sigma1, mu2, sigma2, x0):
-    coord = scipy.optimise.fsolve(lambda x: norm_pdf_multivariate(x, mu1, sigma1) - norm_pdf_multivariate(x, mu2, sigma2),x0)
+    coord = optimize.root(lambda x: norm_pdf_multivariate(x, mu1, sigma1) - norm_pdf_multivariate(x, mu2, sigma2),x0)
     # get score
     score = norm_pdf_multivariate(coord, mu1, sigma1)
     return (coord, score)
