@@ -47,7 +47,7 @@ evaluator = Weighting.InversedVarianceEvaluator();
 dev_corpus.setEvaluator(evaluator)
 
 # Now run with different variance thresholds!
-thresholds = [ variance_data[int(len(variance_data) * 0.32)], variance_data[int(len(variance_data) * 0.31)], variance_data[int(len(variance_data) * 0.30)]]#, 1, 0.0017138, 0.0014019, 0.000594, 0.0003886 ] #1, 0.0017138, 0.0014019, 0.000594,
+thresholds = [ 1 ]# variance_data[int(len(variance_data) * 0.32)], variance_data[int(len(variance_data) * 0.31)], variance_data[int(len(variance_data) * 0.30)]]#, 1, 0.0017138, 0.0014019, 0.000594, 0.0003886 ] #1, 0.0017138, 0.0014019, 0.000594,
 for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
     print ""

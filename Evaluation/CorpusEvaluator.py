@@ -46,6 +46,8 @@ class CorpusEvaluator:
                 ids.append(signature.add(token))
         ids = set(ids)
 
+        print ids
+
         # Get data from database
         token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
         for token_id, lon, lat, variance, count, \
@@ -58,7 +60,7 @@ class CorpusEvaluator:
 
                     covar_matrix = np.asarray([[covarA0, covarA1, covarA2],[covarB0, covarB1, covarB2],[covarC0, covarC1, covarC2]])
                     mean = np.asarray([meanx, meany, meanz])
-                    self.token_data[signature.get(int(token_id))] = {"location" : (lon, lat),
+                    self.token_data[token_id] = {"location" : (lon, lat),
                                            "variance" : variance,
                                            "count" : count,
                                            "mean" : mean,
