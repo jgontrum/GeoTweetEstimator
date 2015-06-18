@@ -54,7 +54,7 @@ class CorpusEvaluator:
             covarB0, covarB1, covarB2, \
             covarC0, covarC1, covarC2 \
             in token_db.getTokenInfo(ids, columns= \
-            "`id`, `long`, `lat`, `variance`, `meanx`, `meany`, `meanz`, `covarA0`, `covarA1`, `covarA2`, `covarB0`, `covarB1`. `covarB2`, `covarC0`, `covarC1`, `covarC2`"):
+            "`id`, `long`, `lat`, `variance`, `meanx`, `meany`, `meanz`, `covarA0`, `covarA1`, `covarA2`, `covarB0`, `covarB1`, `covarB2`, `covarC0`, `covarC1`, `covarC2`"):
 
                     covar_matrix = np.asarray([[covarA0, covarA1, covarA2],[covarB0, covarB1, covarB2],[covarC0, covarC1, covarC2]])
                     mean = np.asarray([meanx, meany, meanz])
