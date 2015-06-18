@@ -46,8 +46,6 @@ class CorpusEvaluator:
                 ids.append(signature.add(token))
         ids = set(ids)
 
-        print ids
-
         # Get data from database
         token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
         for token_id, lon, lat, variance, count, \
@@ -60,7 +58,6 @@ class CorpusEvaluator:
 
                     covar_matrix = np.asarray([[covarA0, covarA1, covarA2],[covarB0, covarB1, covarB2],[covarC0, covarC1, covarC2]])
                     mean = np.asarray([meanx, meany, meanz])
-                    print type(token_id)
                     self.token_data[token_id] = {"location" : (lon, lat),
                                            "variance" : variance,
                                            "count" : count,
@@ -96,7 +93,6 @@ class CorpusEvaluator:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | (fail)', color='grey', fontsize=6)
                     text_pos -= 42000
                 continue
-            print "!!"
             data = self.token_data[token_id]
             variance = data['variance']
             count = data['count']
@@ -121,8 +117,9 @@ class CorpusEvaluator:
         if valid == 0:
             plt.clf()
             return None
-
-        for (mean1, covar1), (mean2, covar2) in itertools.combinations([(mean, covar) for (token, variance, count, coordinates, mean, covar) in token_data_here ]):
+        mcvlist = [(mean, covar) for (token, variance, count, coordinates, mean, covar) in token_data_here ]
+        print mcvlist
+        for (mean1, covar1), (mean2, covar2) in itertools.combinations(mcvlist):
             # get x0:
             x0 = (mean1 + mean2) / 2
             print EvaluationFunctions.get_crossing(np.asarray(mean1), np.asarray(covar1), np.asarray(mean2), np.asarray(covar2),x0)
