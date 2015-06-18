@@ -11,6 +11,7 @@ class TokenExtractor:
     def __init__(self):
         # RegExp that define patterns, that should be REMOVED
         rURL = r'http://.+' # http://www.meh.de
+        rURLs = r'https://.+'
         rNumber = r'\d+'
         rUser = r'@(\w|\d|-|_)+' # @motivationsara
 
@@ -18,6 +19,7 @@ class TokenExtractor:
         self.deleteRegEx  = re.compile(
             unicode(regex_or(
                 rURL,
+                rURLs,
                 rNumber,
                 rUser
             ).decode('utf-8')), re.UNICODE)
