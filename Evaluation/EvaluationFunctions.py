@@ -130,7 +130,9 @@ def norm_pdf_multivariate(x, mu, sigma):
         if det == 0:
             raise NameError("The covariance matrix can't be singular")
 
-        norm_const = 1.0/ ( math.pow((2*np.pi),float(size)/2) * math.pow(det,1.0/2) )
+        d = ( math.pow((2*np.pi),float(size)/2) * math.pow(det,1.0/2) )
+        print d
+        norm_const = 1.0/ d
         x_mu = np.matrix(x - mu)
         inv = sigma.I
         result = math.pow(math.e, -0.5 * (x_mu * inv * x_mu.T))
