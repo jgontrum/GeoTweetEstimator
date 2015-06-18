@@ -14,17 +14,18 @@ import itertools
 import math
 
 class CorpusEvaluator:
-    def __init__(self, corpus='DEV'):
+    def __init__(self, signature=None, clusters=None, corpus='DEV'):
         self.tweets = []        # list of tokenised tweets
         self.location = []      # list of lat, lan tuples
         self.n = 0              # The size of the corpus
-        self.token_data = None  # Token data from pickleTrainingCorpus()
         self.clusters = None    # List of centroid coordinates
         self.variance_threshold = 0
         self.distance_threshold = 0
         self.draw = False       # Toggle weather each tweet should be saved to a PNG file
         self.evaluator = None   # Creates the weights for the tokens in a tweet
         self.null = False       # Test 0-hypothesis
+        self.signature = signature
+        self.clusters = clusters
 
         # Load corpus from database:
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
@@ -35,10 +36,33 @@ class CorpusEvaluator:
         self.n = len(self.tweets)
         assert len(self.tweets) == len(self.location)
 
-    def setData(self, data, clusters, null=False):
-        self.token_data = data
-        self.clusters = clusters
-        self.null = null
+        # Lookup tokendata
+        self.token_data = {}
+
+        # collect ids
+        ids = []
+        for tweet in self.tweets:
+            for token in EvaluationFunctions.getCoOccurrences(tweet):
+                ids.append(signature.add(token))
+        ids = set(ids)
+
+        # Get data from database
+        token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
+        for token_id, lon, lat, variance, count, \
+            meanx, meany, meanz, \
+            covarA0, covarA1, covarA2, \
+            covarB0, covarB1, covarB2, \
+            covarC0, covarC1, covarC2 \
+            in token_db.getTokenInfo(ids, columns= \
+            "`id`, `long`, `lat`, `variance`, `meanx`, `meany`, `meanz`, `covarA0`, `covarA1`, `covarA2`, `covarB0`, `covarB1`. `covarB2`, `covarC0`, `covarC1`, `covarC2`"):
+
+                    covar_matrix = np.asarray([[covarA0, covarA1, covarA2],[covarB0, covarB1, covarB2],[covarC0, covarC1, covarC2]])
+                    mean = np.asarray([meanx, meany, meanz])
+                    self.token_data[token_id] = {"location" : (lon, lat),
+                                           "variance" : variance,
+                                           "count" : count,
+                                           "mean" : mean,
+                                           "covariance" : covar_matrix}
 
     def setEvaluator(self, evaluator):
         self.evaluator = evaluator
@@ -63,30 +87,26 @@ class CorpusEvaluator:
         
         # Look up the data for each token in the tweet
         for token in EvaluationFunctions.getCoOccurrences(tokens):
-
+            token_id = self.signature.get(token)
             if token not in self.token_data:
                 if False: #self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | (fail)', color='grey', fontsize=6)
                     text_pos -= 42000
                 continue
 
-            coordinates, variance, count, mean, covariance = self.token_data[token]
-            lon, lat = coordinates
-            print token, variance
+            data = self.token_data[token_id]
+            variance = data['variance']
+            count = data['count']
+            lon, lat = data["location"]
             if variance < self.variance_threshold:
                 valid += 1
-                # 0-hypothese
-                if self.null:
-                    token = self.token_data.keys()[randint(0,len(self.token_data.keys()))]
-                    coordinates, variance, count = self.token_data[token]
-
                 if self.draw:
                     #plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count), color='black', fontsize=6)
                     text_pos -= 42000
                     current_color = EvaluationFunctions.getColorForValue(variance)
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.7)
 
-                token_data_here.append((token, variance, count, coordinates, mean, covariance))
+                token_data_here.append((token, variance, count, data["location"], data["mean"], data["covariance"]))
 
             else:
                 if self.draw:
@@ -101,7 +121,7 @@ class CorpusEvaluator:
 
         for (mean1, covar1), (mean2, covar2) in itertools.combinations([(mean, covar) for (token, variance, count, coordinates, mean, covar) in token_data_here ]):
             # get x0:
-            x0 = np.array(EvaluationFunctions.getUnweightedMidpoint([mean1,mean2]))
+            x0 = (mean1 + mean2) / 2
             print EvaluationFunctions.get_crossing(np.asarray(mean1), np.asarray(covar1), np.asarray(mean2), np.asarray(covar2),x0)
 
 
