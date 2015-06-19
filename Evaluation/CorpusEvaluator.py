@@ -49,11 +49,12 @@ class CorpusEvaluator:
         # Get data from database
         token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
         for token_id, lon, lat, variance, count, \
-            mean_lng, mean_lat, \
-            covarA0, covarA1, \
-            covarB0, covarB1 \
+            mean_x, mean_y, mean_z, \
+            covarA0, covarA1, covarA2, \
+            covarB0, covarB1, covarB2, \
+            covarC0, covarC1, covarC2 \
             in token_db.getTokenInfo(ids, columns= \
-            "`id`, `long`, `lat`, `variance`, `count`, `mean_lng`, `mean_lat`, `covarA0`, `covarA1`, `covarB0`, `covarB1`"):
+            "`id`, `long`, `lat`, `variance`, `count`, `meanx`, `meany`,`meanz`, `covarA0`, `covarA1`, `covarA2`, `covarB0`, `covarB1`,  `covarB2`,  `covarC0`, `covarC1`,  `covarC2`"):
 
                     covar_matrix = np.matrix([[covarA0, covarA1],[covarB0, covarB1]])
                     #covar_matrix = m.dot(m.T)
