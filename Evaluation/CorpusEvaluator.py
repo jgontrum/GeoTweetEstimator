@@ -97,7 +97,7 @@ class CorpusEvaluator:
             variance = data['variance']
             count = data['count']
             lon, lat = data["location"]
-            if variance < self.variance_threshold:
+            if variance < self.variance_threshold and count > 10:
                 valid += 1
                 if self.draw:
                     #plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count), color='black', fontsize=6)
@@ -118,12 +118,15 @@ class CorpusEvaluator:
             plt.clf()
             return None
 
-        mcvlist = [(mean, covar) for (token, variance, count, coordinates, mean, covar) in token_data_here ]
-        for (mean1, covar1), (mean2, covar2) in itertools.combinations(mcvlist, 2):
+        mcvlist = [(mean, covar, token) for (token, variance, count, coordinates, mean, covar) in token_data_here ]
+        for (mean1, covar1, token1), (mean2, covar2, token2) in itertools.combinations(mcvlist, 2):
             # get x0:
             x0 = (mean1 + mean2) / 2
+            print token1, token2
+            print mean1
+            print mean2
             print EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
-
+            print "---"
 
         """
         # Generate the data for the weighted midpoint
@@ -171,7 +174,7 @@ class CorpusEvaluator:
             real_to_calc_matches[i][0] = i
 
        # self.n = 3
-        for self.i in [93]: #range(0,self.n):
+        for self.i in [0,1,2,3,4,5]: #range(0,self.n):
             values = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
             if values is None:
                 invalids += 1

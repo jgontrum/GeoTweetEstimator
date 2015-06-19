@@ -6,6 +6,7 @@ import math
 import itertools
 import numpy as np
 from scipy.optimize import root
+from scipy.optimize import fsolve
 from scipy.stats import multivariate_normal
 
 
@@ -151,13 +152,12 @@ def norm_pdf_multivariate(x, mu, sigma):
         raise NameError("The dimensions of the input don't match")
 
 def get_crossing(mu1, sigma1, mu2, sigma2, x0):
-    print sigma1
-    print sigma1.shape, sigma1.dtype
-    var1 = multivariate_normal(mean=mu1, cov=sigma1)#, allow_singular=True)
-    var2 = multivariate_normal(mean=mu2, cov=sigma2)#, allow_singular=True)
-    coord = root(lambda x: norm_pdf_multivariate(x,mu1,sigma1) - norm_pdf_multivariate(x,mu2,sigma2), x0)
-    
-    # coord = root(lambda x: norm_pdf_multivariate(x,mu1,sigma1) - norm_pdf_multivariate(x,mu2,sigma2), x0)
-    # get score
-    score = norm_pdf_multivariate(coord, mu1, sigma1)
-    return (coord, score)
+    try:
+        var1 = multivariate_normal(mean=mu1, cov=sigma1)#, allow_singular=True)
+        var2 = multivariate_normal(mean=mu2, cov=sigma2)#, allow_singular=True)
+        coord = fsolve(lambda x: np.array([var1.pdf(x) - var2.pdf(x),0]), x0)
+        score = var1.pdf(coord) 
+        # get score
+        return (coord, score)
+    except:
+        return (None, None)
