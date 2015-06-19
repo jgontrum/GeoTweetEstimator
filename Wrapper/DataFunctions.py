@@ -40,9 +40,8 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
     tweet_coordinates = []
     for tokens, lat, lon in database.getRows("`tokenised_low`, `lat`, `long`"):
         tweet_coordinates.append((lon, lat))
-        cartesian = EvaluationFunctions.convertLatLongToCartesian(lon, lat)
         for token in EvaluationFunctions.getCoOccurrences(tokens.split()):
-            token_distribution_cart.setdefault(token, []).append(cartesian)
+            token_distribution_cart.setdefault(token, []).append((lon, lat))
             signature.add(token)
     
     pickle.dump(token_distribution_cart, open("Data/rawtokens.pickle","wb"))
@@ -50,7 +49,7 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
     
     csvfile = gzip.open(filenamecsv + ".gz", "wb")
     writer = unicodecsv.writer(csvfile, delimiter=',', quotechar='"',escapechar='\\', quoting=unicodecsv.QUOTE_ALL, encoding='utf-8')
-    return 
+    return
 
     for token, coordinates_of_tuple in token_distribution_cart.iteritems():
         count = len(coordinates_of_tuple)
@@ -63,42 +62,30 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
             # Calculate the mean values for
             mean = np.mean(np_list, axis=0)
-            (mean_x, mean_y, mean_z) = tuple(mean)
+            (mean_lng, mean_lat) = tuple(mean)
 
-            (median_x, median_y, median_z) = tuple(np.median(np_list, axis=0))
+            (median_lng, median_lat) = tuple(np.median(np_list, axis=0))
 
             variance_num = 0
-            for (x, y, z) in coordinates_of_tuple:
-                variance_num += (x - mean_x)**2 + (y - mean_y)**2 + (z - mean_z)**2
+            for lng, lat in coordinates_of_tuple:
+                variance_num += (lng - mean_lng)**2 + (lat - median_lat)**2
 
             # Calculate the variance
             variance = variance_num / count
-            lon, lat = EvaluationFunctions.convertCartesianToLatLong(median_x, median_y, median_z)
-
-            covariance = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]]
-            if token in good_tokens:
-                log.write(str(count) + "," + token[0] + "\n")
-                log.flush()
-                covariance = np.cov(np_list).tolist()
+            covariance = np.cov(np_list).tolist()
 
             writer.writerow([
                 tokenID,"|".join(list(token)),
-                lon,
-                lat,
+                median_lng,
+                median_lat,
                 variance,
                 count,
-                mean_x,
-                mean_y,
-                mean_z,
+                mean_lng,
+                mean_lat,
                 covariance[0][0],
                 covariance[0][1],
-                covariance[0][2],
                 covariance[1][0],
                 covariance[1][1],
-                covariance[1][2],
-                covariance[2][0],
-                covariance[2][1],
-                covariance[2][2]
             ])
             del covariance
             del variance
