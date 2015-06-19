@@ -56,9 +56,8 @@ class CorpusEvaluator:
             in token_db.getTokenInfo(ids, columns= \
             "`id`, `long`, `lat`, `variance`, `count`, `meanx`, `meany`,`meanz`, `covarA0`, `covarA1`, `covarA2`, `covarB0`, `covarB1`,  `covarB2`,  `covarC0`, `covarC1`,  `covarC2`"):
 
-                    covar_matrix = np.matrix([[covarA0, covarA1],[covarB0, covarB1]])
-                    #covar_matrix = m.dot(m.T)
-                    mean = np.asarray([mean_lng, mean_lat])
+                    covar_matrix = np.matrix([[covarA0, covarA1, covarA2],[covarB0, covarB1, covarB2],[covarC0, covarC1, covarC2]])
+                    mean = np.asarray([mean_x, mean_y, mean_z])
                     self.token_data[token_id] = {"location" : (lon, lat),
                                            "variance" : variance,
                                            "count" : count,
