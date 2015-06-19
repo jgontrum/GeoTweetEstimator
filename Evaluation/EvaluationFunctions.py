@@ -5,7 +5,9 @@ from geopy.distance import vincenty
 import math
 import itertools
 import numpy as np
-from scipy.optimize import fsolve
+from scipy.optimize import root
+from scipy.stats import multivariate_normal
+
 
 """
 This file provides a lot of useful functions that are used in the evaluation proces.
@@ -132,21 +134,30 @@ def norm_pdf_multivariate(x, mu, sigma):
 
         a = (2*np.pi)
         b = float(size)/2
+        x = np.log(np.power(a,b))
+        
+        y = 0.5 * det
+        det =  np.log(np.float32(det))
 
-        x = math.pow(a,b)
-        y = math.pow(det,0.5)
-        d = ( x *  y )
+        d = ( x +  y )
+        d = math.exp(d)
         print d
         norm_const = 1.0/ d
         x_mu = np.matrix(x - mu)
         inv = sigma.I
-        result = math.pow(math.e, -0.5 * (x_mu * inv * x_mu.T))
+        result = math.exp(-0.5 * (x_mu * inv * x_mu.T))
         return norm_const * result
     else:
         raise NameError("The dimensions of the input don't match")
 
 def get_crossing(mu1, sigma1, mu2, sigma2, x0):
-    coord = fsolve(lambda x: norm_pdf_multivariate(x, mu1, sigma1) - norm_pdf_multivariate(x, mu2, sigma2),x0)
+    print sigma1
+    print sigma1.shape, sigma1.dtype
+    var1 = multivariate_normal(mean=mu1, cov=sigma1, allow_singular=True)
+    var2 = multivariate_normal(mean=mu2, cov=sigma2, allow_singular=True)
+    coord = root(lambda x: norm_pdf_multivariate(x,mu1,sigma1) - norm_pdf_multivariate(x,mu2,sigma2), x0)
+    
+    # coord = root(lambda x: norm_pdf_multivariate(x,mu1,sigma1) - norm_pdf_multivariate(x,mu2,sigma2), x0)
     # get score
     score = norm_pdf_multivariate(coord, mu1, sigma1)
     return (coord, score)
