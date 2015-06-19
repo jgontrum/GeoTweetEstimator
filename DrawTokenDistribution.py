@@ -30,25 +30,26 @@ if len(sys.argv) < 3 :
 
 signature = pickle.load(open(sys.argv[1], 'rb')) #< ((lon, lat), variance, count)
 
-tokens = [("dresden",)]
+tokens = [("dresden",), ("berlin",), ("bonn",)]
 ids = [signature.add(x) for x in tokens]
 
 functions = []
 
 token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
 for token_id, lon, lat, variance, count, \
-    mean_lng, mean_lat, \
-    covarA0, covarA1, \
-    covarB0, covarB1 \
+    mean_x, mean_y, mean_z, \
+    covarA0, covarA1, covarA2, \
+    covarB0, covarB1, covarB2, \
+    covarC0, covarC1, covarC2 \
     in token_db.getTokenInfo(ids, columns= \
-    "`id`, `long`, `lat`, `variance`, `count`, `mean_lng`, `mean_lat`, `covarA0`, `covarA1`, `covarB0`, `covarB1`"):
-            covar_matrix = np.matrix([[covarA0, covarA1],[covarB0, covarB1]])
-            mean = np.asarray([mean_lng, mean_lat])
+    "`id`, `long`, `lat`, `variance`, `count`, `meanx`, `meany`,`meanz`, `covarA0`, `covarA1`, `covarA2`, `covarB0`, `covarB1`,  `covarB2`,  `covarC0`, `covarC1`,  `covarC2`"):
+
+            covar_matrix = np.matrix([[covarA0, covarA1, covarA2],[covarB0, covarB1, covarB2],[covarC0, covarC1, covarC2]])
+            mean = np.asarray([mean_x, mean_y, mean_z])
             functions.append(multivariate_normal(mean=mean, cov=covar_matrix))
 
 
 pickle.dump(functions, open("functions.pickle", "wb"))
-
 
 # Plot functions
 x = []
