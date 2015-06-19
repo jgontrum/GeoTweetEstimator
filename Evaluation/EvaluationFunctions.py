@@ -59,6 +59,16 @@ def getColorForValue(variance):
     b = 25.0
     return (r/255.0, g/255.0, b/255.0)
 
+# Return a color for a variance value
+def getColorForValue2(variance):
+    t = 1.0
+    if variance > t:
+        return (1.0, 0 , 25.0/255.0)
+    r = (255.0 * float(variance) / t)
+    g = (255.0 * (t - float(variance)) / t)
+    b = 25.0
+    return (r/255.0, g/255.0, b/255.0)
+
 # Return the size of a token for a count value
 def getSizeForValue(count):
     t = 1000.0
