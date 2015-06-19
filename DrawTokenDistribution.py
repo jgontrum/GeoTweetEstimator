@@ -4,7 +4,6 @@ __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 
 import sys
 from Wrapper import MapFunctions
-import matplotlib.pyplot as plt
 import cPickle as pickle
 from Wrapper import Signature
 import os
@@ -30,7 +29,6 @@ if len(sys.argv) < 3 :
     print "Specify the path for the corpus and the output path for the graph"
 
 signature = pickle.load(open(sys.argv[1], 'rb')) #< ((lon, lat), variance, count)
-basemap = MapFunctions.prepareMap() # print the positions here
 
 tokens = [("dresden",)]
 ids = [signature.add(x) for x in tokens]
@@ -49,16 +47,19 @@ for token_id, lon, lat, variance, count, \
             functions.append(multivariate_normal(mean=mean, cov=covar_matrix))
 
 
+pickle.dump(functions, open("functions.pickle", "wb"))
+
+
 # Plot functions
 x = []
 y = []
 z = []
-for lat in range(45, 56):
-    for lng in range(5,18):
+for lat in range(450, 560):
+    for lng in range(50,180):
+        lat = lat / 10.0
+        lng = lng / 10.0
         x.append(lng)
         y.append(lat)
         z.append(functions[0].pdf([lng, lat]))
-        basemap.plot(lng, lat, '.r', markeredgecolor='r', markersize=1,latlon=True)
 
-
-plt.savefig(sys.argv[2], format='png', bbox_inches='tight', dpi=900)
+pickle.dump((x,y,z), open("draw.pickle", "wb"))
