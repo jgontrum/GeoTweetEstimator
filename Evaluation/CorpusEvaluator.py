@@ -21,7 +21,7 @@ class CorpusEvaluator:
         self.clusters = None    # List of centroid coordinates
         self.variance_threshold = 0
         self.distance_threshold = 0
-        self.draw = False       # Toggle weather each tweet should be saved to a PNG file
+        self.draw = True       # Toggle weather each tweet should be saved to a PNG file
         self.evaluator = None   # Creates the weights for the tokens in a tweet
         self.null = False       # Test 0-hypothesis
         self.signature = signature
@@ -123,10 +123,12 @@ class CorpusEvaluator:
             # get x0:
             x0 = (mean1 + mean2) / 2
             print token1, token2
-            print mean1
-            print mean2
-            print EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
-            print "---"
+            (x,y,z),score =  EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
+            print score
+            lon, lat = EvaluationFunctions.convertCartesianToLatLong(x,y,z)
+            current_color = 'green'
+            basemap.plot(lon, lat, 's', latlon=True, markeredgecolor=current_color, color=current_color, alpha=0.1)
+
 
         """
         # Generate the data for the weighted midpoint
@@ -142,16 +144,16 @@ class CorpusEvaluator:
         print distance
         print valid
         print ""
-
+            """
         if self.draw:
             basemap.plot(location[0], location[1], '^', mfc='none' , markeredgecolor='black', latlon=True, alpha=1)
-            basemap.plot(lon_score, lat_score, 'v',  mfc='none',  markeredgecolor='black', latlon=True, alpha=1)
+            #basemap.plot(lon_score, lat_score, 'v',  mfc='none',  markeredgecolor='black', latlon=True, alpha=1)
            
-            plt.text(10000,10000,'Distance: '+ str(round(distance,1)) + 'km')
-            plt.text(10000,80000, 'Threshold: ' + str(self.variance_threshold))
+            #plt.text(10000,10000,'Distance: '+ str(round(distance,1)) + 'km')
+            #plt.text(10000,80000, 'Threshold: ' + str(self.variance_threshold))
             plt.savefig('img/tweet_' + str(self.variance_threshold) + "_" + str(self.i) + ".png", format='png')
             plt.clf()
-        """
+
         #return (lon_score, lat_score, location[0], location[1], distance)
 
         return (0,0,0,0,0)
