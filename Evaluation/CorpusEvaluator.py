@@ -120,15 +120,30 @@ class CorpusEvaluator:
             plt.clf()
             return None
 
-        mcvlist = [(mean, covar, token) for (token, variance, count, coordinates, mean, covar) in token_data_here ]
-        for (mean1, covar1, token1), (mean2, covar2, token2) in itertools.combinations(mcvlist, 2):
-            # get x0:
-            x0 = (mean1 + mean2) / 2
-            print token1, token2
-            print mean1
-            print mean2
-            print EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
-            print "---"
+        # mcvlist = [(mean, covar, token) for (token, variance, count, coordinates, mean, covar) in token_data_here ]
+        # for (mean1, covar1, token1), (mean2, covar2, token2) in itertools.combinations(mcvlist, 2):
+        #     # get x0:
+        #     x0 = (mean1 + mean2) / 2
+        #     print token1, token2
+        #     print mean1
+        #     print mean2
+        #     print EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
+        #     print "---"
+
+
+        # Find initial guess by estimating a midpoint
+        x0 = np.array([0,0])
+        means = []
+        sigmas = []
+        for (token, variance, count, coordinates, mean, covar) in token_data_here:
+            x0 += mean
+            means.append(means)
+            sigmas.append(sigmas)
+        x0 /= len(token_data_here)
+
+        (coord, score) = EvaluationFunctions.get_combinations(means, sigmas, x0)
+        print (coord, score)
+
 
         functions = []
         loc = []
@@ -136,7 +151,7 @@ class CorpusEvaluator:
             functions.append(multivariate_normal(mean=mean, cov=covar))
             loc.append(coordinates)
 
-        pickle.dump((functions,loc, location), open("tweet_" + str(self.i) + ".pickle", "wb"))
+        pickle.dump((functions,loc, location, x0, coord), open("tweet_" + str(self.i) + ".pickle", "wb"))
 
         """
         # Generate the data for the weighted midpoint
