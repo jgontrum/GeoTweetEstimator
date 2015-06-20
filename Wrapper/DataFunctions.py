@@ -44,13 +44,10 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
             token_distribution_cart.setdefault(token, []).append((lon, lat))
             signature.add(token)
     
-    pickle.dump(token_distribution_cart, open("Data/rawtokens.pickle","wb"))
     pickle.dump(signature, open(filenamesig, 'wb'))
     
     csvfile = gzip.open(filenamecsv + ".gz", "wb")
     writer = unicodecsv.writer(csvfile, delimiter=',', quotechar='"',escapechar='\\', quoting=unicodecsv.QUOTE_ALL, encoding='utf-8')
-    return
-
     for token, coordinates_of_tuple in token_distribution_cart.iteritems():
         count = len(coordinates_of_tuple)
         if count > COUNT_THRESHOLD:
@@ -73,7 +70,7 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
             # Calculate the variance
             variance = variance_num / count
             covariance = np.cov(np_list.T)
-
+            print covariance.shape, covariance.dtype
             writer.writerow([
                 tokenID,"|".join(list(token)),
                 median_lng,
