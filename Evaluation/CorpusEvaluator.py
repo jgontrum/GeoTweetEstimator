@@ -99,7 +99,7 @@ class CorpusEvaluator:
             variance = data['variance']
             count = data['count']
             lon, lat = data["location"]
-            if variance < self.variance_threshold and count > 10:
+            if variance < self.variance_threshold: # and count > 10:
                 valid += 1
                 if self.draw:
                     #plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | ' + str(round(variance,1)) + ' | ' + str(count), color='black', fontsize=6)
@@ -136,7 +136,7 @@ class CorpusEvaluator:
             functions.append(multivariate_normal(mean=mean, cov=covar))
             loc.append(coordinates)
 
-        pickle.dumb((functions,loc, location), open("tweet_" + str(self.i) + ".pickle", "wb"))
+        pickle.dump((functions,loc, location), open("tweet_" + str(self.i) + ".pickle", "wb"))
 
         """
         # Generate the data for the weighted midpoint
