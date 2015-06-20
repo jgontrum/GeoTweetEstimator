@@ -37,7 +37,7 @@ for var in token_db.getTokenInfo(ids=None, columns="`variance`"):
     variances += var
 
 variance_data = list(sorted(variances))
-
+n = len(variance_data)
 """ EVALUATE """
 dev_corpus = CorpusEvaluator.CorpusEvaluator(signature=signature, clusters=clusters, corpus='DEV')
 dev_corpus.setDistanceThreshold(200)
@@ -47,7 +47,10 @@ evaluator = Weighting.InversedVarianceEvaluator();
 dev_corpus.setEvaluator(evaluator)
 
 # Now run with different variance thresholds!
-thresholds = [ variance_data[int(len(variance_data) * 1)], variance_data[int(len(variance_data) * 0.75)], variance_data[int(len(variance_data) * 0.5)],  variance_data[int(len(variance_data) * 0.25)]]#, 1, 0.0017138, 0.0014019, 0.000594, 0.0003886 ] #1, 0.0017138, 0.0014019, 0.000594,
+thresholds = [ variance_data[int(n * 1)],
+               variance_data[int(n * 0.75)],
+               variance_data[int(n * 0.5)],
+               variance_data[int(len(n * 0.25))]]
 for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
     print ""
