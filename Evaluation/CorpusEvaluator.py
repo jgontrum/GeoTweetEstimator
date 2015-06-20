@@ -7,11 +7,13 @@ from Wrapper import MySQLConnection
 from Wrapper import MapFunctions
 import matplotlib.pyplot as plt
 from Evaluation import EvaluationFunctions
+import cPickle as pickle
 from random import randint
 from tabulate import tabulate
 import numpy as np
 import itertools
 import math
+from scipy.stats import multivariate_normal
 
 class CorpusEvaluator:
     def __init__(self, signature=None, clusters=None, corpus='DEV'):
@@ -128,6 +130,14 @@ class CorpusEvaluator:
             print EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
             print "---"
 
+        functions = []
+        loc = []
+        for (token, variance, count, coordinates, mean, covar) in token_data_here:
+            functions.append(multivariate_normal(mean=mean, cov=covar))
+            loc.append(coordinates)
+
+        pickle.dumb((functions,loc, location), open("tweet_" + str(self.i) + ".pickle", "wb"))
+
         """
         # Generate the data for the weighted midpoint
         #coordinate_list, weight_list = self.evaluator.evaluate(token_data_here)
@@ -174,7 +184,7 @@ class CorpusEvaluator:
             real_to_calc_matches[i][0] = i
 
        # self.n = 3
-        for self.i in [0,1,2,3,4,5]: #range(0,self.n):
+        for self.i in [1,2,3,4,5]: #range(0,self.n):
             values = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
             if values is None:
                 invalids += 1
