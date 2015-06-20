@@ -165,7 +165,7 @@ def get_crossing(mu1, sigma1, mu2, sigma2, x0):
     try:
         var1 = multivariate_normal(mean=mu1, cov=sigma1)
         var2 = multivariate_normal(mean=mu2, cov=sigma2)
-        coord = fsolve(lambda x: np.array([var1.pdf(x) - var2.pdf(x),0,0]), x0)
+        coord = fsolve(lambda x: np.array([var1.pdf(x) - var2.pdf(x),0]), x0)
         score = var1.pdf(coord) 
         # get score
         return (coord, score)
