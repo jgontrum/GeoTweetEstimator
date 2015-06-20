@@ -20,26 +20,36 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
     signature = Signature.Signature()
     # Make connection
     database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TRAIN")
+    database2 = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TEST")
+    database3 = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="DEV")
 
+    good_tokens = []
+    for tokens in database2.getRows("`tokenised_low`"):
+        for token in EvaluationFunctions.getCoOccurrences(tokens[0].split()):
+            good_tokens.append(token)
+    for tokens in database3.getRows("`tokenised_low`"):
+        for token in EvaluationFunctions.getCoOccurrences(tokens[0].split()):
+            good_tokens.append(token)
+
+    good_tokens = set(good_tokens)
+
+    print len(good_tokens)
     # Iterate over all tweets and split the tokenised texts.
     # Each token maps to a list of lon, lat tuples
     token_distribution_cart = {}
     tweet_coordinates = []
     for tokens, lat, lon in database.getRows("`tokenised_low`, `lat`, `long`"):
         tweet_coordinates.append((lon, lat))
-        cartesian = EvaluationFunctions.convertLatLongToCartesian(lon, lat)
         for token in EvaluationFunctions.getCoOccurrences(tokens.split()):
-            token_distribution_cart.setdefault(token, []).append(cartesian)
+            token_distribution_cart.setdefault(token, []).append((lon, lat))
             signature.add(token)
     
     pickle.dump(token_distribution_cart, open("Data/rawtokens.pickle","wb"))
     pickle.dump(signature, open(filenamesig, 'wb'))
-
-    return
-
+    
     csvfile = gzip.open(filenamecsv + ".gz", "wb")
     writer = unicodecsv.writer(csvfile, delimiter=',', quotechar='"',escapechar='\\', quoting=unicodecsv.QUOTE_ALL, encoding='utf-8')
-
+    return
 
     for token, coordinates_of_tuple in token_distribution_cart.iteritems():
         count = len(coordinates_of_tuple)
@@ -52,38 +62,30 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
             # Calculate the mean values for
             mean = np.mean(np_list, axis=0)
-            (mean_x, mean_y, mean_z) = tuple(mean)
-            (median_x, median_y, median_z) = tuple(np.median(np_list, axis=0))
+            (mean_lng, mean_lat) = tuple(mean)
+
+            (median_lng, median_lat) = tuple(np.median(np_list, axis=0))
 
             variance_num = 0
-            for (x, y, z) in coordinates_of_tuple:
-                variance_num += (x - mean_x)**2 + (y - mean_y)**2 + (z - mean_z)**2
+            for lng, lat in coordinates_of_tuple:
+                variance_num += (lng - mean_lng)**2 + (lat - median_lat)**2
 
             # Calculate the variance
             variance = variance_num / count
-            lon, lat = EvaluationFunctions.convertCartesianToLatLong(median_x, median_y, median_z)
+            covariance = np.cov(np_list.T)
 
-            np_list = np_list.T
-            covariance = np.cov(np_list).tolist()
-            #print covariance.shape, covariance.dtype
             writer.writerow([
                 tokenID,"|".join(list(token)),
-                lon,
-                lat,
+                median_lng,
+                median_lat,
                 variance,
                 count,
-                mean_x,
-                mean_y,
-                mean_z,
+                mean_lng,
+                mean_lat,
                 covariance[0][0],
                 covariance[0][1],
-                covariance[0][2],
                 covariance[1][0],
                 covariance[1][1],
-                covariance[1][2],
-                covariance[2][0],
-                covariance[2][1],
-                covariance[2][2]
             ])
             del covariance
             del variance

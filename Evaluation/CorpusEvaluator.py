@@ -21,7 +21,7 @@ class CorpusEvaluator:
         self.clusters = None    # List of centroid coordinates
         self.variance_threshold = 0
         self.distance_threshold = 0
-        self.draw = True       # Toggle weather each tweet should be saved to a PNG file
+        self.draw = False       # Toggle weather each tweet should be saved to a PNG file
         self.evaluator = None   # Creates the weights for the tokens in a tweet
         self.null = False       # Test 0-hypothesis
         self.signature = signature
@@ -49,15 +49,15 @@ class CorpusEvaluator:
         # Get data from database
         token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
         for token_id, lon, lat, variance, count, \
-            mean_x, mean_y, mean_z, \
-            covarA0, covarA1, covarA2, \
-            covarB0, covarB1, covarB2, \
-            covarC0, covarC1, covarC2 \
+            mean_lng, mean_lat, \
+            covarA0, covarA1, \
+            covarB0, covarB1 \
             in token_db.getTokenInfo(ids, columns= \
-            "`id`, `long`, `lat`, `variance`, `count`, `meanx`, `meany`,`meanz`, `covarA0`, `covarA1`, `covarA2`, `covarB0`, `covarB1`,  `covarB2`,  `covarC0`, `covarC1`,  `covarC2`"):
+            "`id`, `long`, `lat`, `variance`, `count`, `mean_lng`, `mean_lat`, `covarA0`, `covarA1`, `covarB0`, `covarB1`"):
 
-                    covar_matrix = np.matrix([[covarA0, covarA1, covarA2],[covarB0, covarB1, covarB2],[covarC0, covarC1, covarC2]])
-                    mean = np.asarray([mean_x, mean_y, mean_z])
+                    covar_matrix = np.matrix([[covarA0, covarA1],[covarB0, covarB1]])
+                    #covar_matrix = m.dot(m.T)
+                    mean = np.asarray([mean_lng, mean_lat])
                     self.token_data[token_id] = {"location" : (lon, lat),
                                            "variance" : variance,
                                            "count" : count,
@@ -123,12 +123,10 @@ class CorpusEvaluator:
             # get x0:
             x0 = (mean1 + mean2) / 2
             print token1, token2
-            (x,y,z),score =  EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
-            print score
-            lon, lat = EvaluationFunctions.convertCartesianToLatLong(x,y,z)
-            current_color = 'green'
-            basemap.plot(lon, lat, 's', latlon=True, markeredgecolor=current_color, color=current_color, alpha=0.1)
-
+            print mean1
+            print mean2
+            print EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
+            print "---"
 
         """
         # Generate the data for the weighted midpoint
@@ -144,16 +142,16 @@ class CorpusEvaluator:
         print distance
         print valid
         print ""
-            """
+
         if self.draw:
             basemap.plot(location[0], location[1], '^', mfc='none' , markeredgecolor='black', latlon=True, alpha=1)
-            #basemap.plot(lon_score, lat_score, 'v',  mfc='none',  markeredgecolor='black', latlon=True, alpha=1)
+            basemap.plot(lon_score, lat_score, 'v',  mfc='none',  markeredgecolor='black', latlon=True, alpha=1)
            
-            #plt.text(10000,10000,'Distance: '+ str(round(distance,1)) + 'km')
-            #plt.text(10000,80000, 'Threshold: ' + str(self.variance_threshold))
+            plt.text(10000,10000,'Distance: '+ str(round(distance,1)) + 'km')
+            plt.text(10000,80000, 'Threshold: ' + str(self.variance_threshold))
             plt.savefig('img/tweet_' + str(self.variance_threshold) + "_" + str(self.i) + ".png", format='png')
             plt.clf()
-
+        """
         #return (lon_score, lat_score, location[0], location[1], distance)
 
         return (0,0,0,0,0)
