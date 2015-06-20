@@ -37,30 +37,19 @@ functions = []
 
 token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
 for token_id, lon, lat, variance, count, \
-    mean_x, mean_y, mean_z, \
-    covarA0, covarA1, covarA2, \
-    covarB0, covarB1, covarB2, \
-    covarC0, covarC1, covarC2 \
+    mean_lng, mean_lat, \
+    covarA0, covarA1, \
+    covarB0, covarB1 \
     in token_db.getTokenInfo(ids, columns= \
-    "`id`, `long`, `lat`, `variance`, `count`, `meanx`, `meany`,`meanz`, `covarA0`, `covarA1`, `covarA2`, `covarB0`, `covarB1`,  `covarB2`,  `covarC0`, `covarC1`,  `covarC2`"):
+    "`id`, `long`, `lat`, `variance`, `count`, `mean_lng`, `mean_lat`, `covarA0`, `covarA1`, `covarB0`, `covarB1`"):
 
-            covar_matrix = np.matrix([[covarA0, covarA1, covarA2],[covarB0, covarB1, covarB2],[covarC0, covarC1, covarC2]])
-            mean = np.asarray([mean_x, mean_y, mean_z])
+            covar_matrix = np.matrix([[covarA0, covarA1],[covarB0, covarB1]])
+            print covar_matrix
+            mean = np.asarray([mean_lng, mean_lat])
             functions.append(multivariate_normal(mean=mean, cov=covar_matrix))
 
+print functions[0].pdf([55.5 ,17.5 ])
+print functions[0].pdf([17.5, 55.5 ])
 
 pickle.dump(functions, open("functions.pickle", "wb"))
 
-# Plot functions
-x = []
-y = []
-z = []
-for lat in range(450, 560):
-    for lng in range(50,180):
-        lat = lat / 10.0
-        lng = lng / 10.0
-        x.append(lng)
-        y.append(lat)
-        z.append(functions[0].pdf([lng, lat]))
-
-pickle.dump((x,y,z), open("draw.pickle", "wb"))
