@@ -71,13 +71,13 @@ class CorpusEvaluator:
                                            "mean" : mean,
                                            "covariance" : covar_matrix}
         # Combine all user tweets
-        for user, tweets in user_to_tweets.iteritems():
-            tokens = []
-            for t in tweets:
-                tokens += t
-            for i in range(self.n):
-                if self.users[i] == user:
-                    self.tweets[i] = tokens
+        # for user, tweets in user_to_tweets.iteritems():
+        #     tokens = []
+        #     for t in tweets:
+        #         tokens += t
+        #     for i in range(self.n):
+        #         if self.users[i] == user:
+        #             self.tweets[i] = tokens
 
     def setEvaluator(self, evaluator):
         self.evaluator = evaluator
