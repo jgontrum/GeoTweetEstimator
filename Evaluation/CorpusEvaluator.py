@@ -29,12 +29,16 @@ class CorpusEvaluator:
         self.null = False       # Test 0-hypothesis
         self.signature = signature
         self.clusters = clusters
+        self.users = []
 
         # Load corpus from database:
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
+        user_to_tweets = {}
 
         for tokens, lat, lon, user in database.getRows("`tokenised_low`, `lat`, `long`, `user_id`"):
             self.tweets.append(tokens.split())
+            self.users .append(user)
+            user_to_tweets.setdefault(user, []).append(tokens.split())
             self.location.append((lon, lat))
         self.n = len(self.tweets)
         assert len(self.tweets) == len(self.location)
@@ -66,6 +70,15 @@ class CorpusEvaluator:
                                            "count" : count,
                                            "mean" : mean,
                                            "covariance" : covar_matrix}
+        # Combine all user tweets
+        for user, tweets in user_to_tweets.iteritems():
+            tokens = []
+            for t in tweets:
+                tokens += t
+            for i in range(self.n):
+                if self.users[i] == user:
+                    self.tweets[i] = tokens
+
     def setEvaluator(self, evaluator):
         self.evaluator = evaluator
 

@@ -179,7 +179,7 @@ def get_combinations(means, sigmas, x0):
         try:
             pdfs.append(multivariate_normal(mean=means[i], cov=sigmas[i]))
         except:
-            print "?"
+            continue
     f_combination = lambda x: -1* sum([f.pdf(x) for f in pdfs])
     coord = fmin(f_combination, x0, full_output=False, disp=False, retall=False)
     score = pdfs[0].pdf(coord)
