@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Johannes Gontrum <gontrum@uni-potsdam.de>'
 
+import random
 import os
 from Wrapper import MySQLConnection
 from Wrapper import MapFunctions
@@ -88,7 +89,6 @@ class CorpusEvaluator:
         
         # Look up the data for each token in the tweet
         for token in EvaluationFunctions.getCoOccurrences(tokens):
-            print token
             token_id =  self.signature.add(token)
             if token_id not in self.token_data:
                 if False: #self.draw:
@@ -130,43 +130,27 @@ class CorpusEvaluator:
         #     print EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
         #     print "---"
 
-
         # Find initial guess by estimating a midpoint
         x0 = np.array([0,0])
         means = []
         sigmas = []
-        for (token, variance, count, coordinates, mean, covar) in token_data_here:
-            x0 += mean
-            means.append(means)
-            sigmas.append(sigmas)
-        x0 /= len(token_data_here)
-
-        (coord, score) = EvaluationFunctions.get_combinations(means, sigmas, x0)
-        print (coord, score)
-
-
         functions = []
         loc = []
         for (token, variance, count, coordinates, mean, covar) in token_data_here:
-            functions.append(multivariate_normal(mean=mean, cov=covar))
+            x0 += mean
+            means.append(mean)
+            sigmas.append(covar)
+            try:
+                functions.append(multivariate_normal(mean=mean, cov=covar))
+            except:
+                continue
             loc.append(coordinates)
 
-        pickle.dump((functions,loc, location, x0, coord), open("tweet_" + str(self.i) + ".pickle", "wb"))
+        x0 /= len(token_data_here)
 
-        """
-        # Generate the data for the weighted midpoint
-        #coordinate_list, weight_list = self.evaluator.evaluate(token_data_here)
-
-        # Calculate the midpoint
-
-        lon_score, lat_score = EvaluationFunctions.getWeightedMidpoint(coordinate_list, weight_list)
+        ((lon_score, lat_score), score) = EvaluationFunctions.get_combinations(means, sigmas, x0)
 
         distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
-        
-        print " ".join(tokens)
-        print distance
-        print valid
-        print ""
 
         if self.draw:
             basemap.plot(location[0], location[1], '^', mfc='none' , markeredgecolor='black', latlon=True, alpha=1)
@@ -176,10 +160,10 @@ class CorpusEvaluator:
             plt.text(10000,80000, 'Threshold: ' + str(self.variance_threshold))
             plt.savefig('img/tweet_' + str(self.variance_threshold) + "_" + str(self.i) + ".png", format='png')
             plt.clf()
-        """
-        #return (lon_score, lat_score, location[0], location[1], distance)
+        
+        #pickle.dump((functions,loc, location, x0, (lon_score, lat_score), distance,score), open("tweet_" + str(self.i) + ".pickle", "wb"))
 
-        return (0,0,0,0,0)
+        return (lon_score, lat_score, location[0], location[1], distance)
 
 
     def evaluateCorpus(self, printmsg=False):
@@ -199,7 +183,7 @@ class CorpusEvaluator:
             real_to_calc_matches[i][0] = i
 
        # self.n = 3
-        for self.i in [1,2,3,4,5]: #range(0,self.n):
+        for self.i in range(0,self.n):
             values = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
             if values is None:
                 invalids += 1

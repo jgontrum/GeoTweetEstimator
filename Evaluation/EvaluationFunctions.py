@@ -8,7 +8,7 @@ import numpy as np
 from scipy.optimize import fmin
 from scipy.optimize import fsolve
 from scipy.stats import multivariate_normal
-
+from sys import stderr
 
 """
 This file provides a lot of useful functions that are used in the evaluation proces.
@@ -176,8 +176,11 @@ def get_crossing(mu1, sigma1, mu2, sigma2, x0):
 def get_combinations(means, sigmas, x0):
     pdfs = []
     for i in range(len(means)):
-        pdfs.append(multivariate_normal(mean=means[i], cov=sigmas[i]))
-    f_combination = lambda x: np.array(-1 * [sum([f.pdf(x) for f in pdfs]),0])
-    coord = fmin(f_combination, x0)
+        try:
+            pdfs.append(multivariate_normal(mean=means[i], cov=sigmas[i]))
+        except:
+            print "?"
+    f_combination = lambda x: -1* sum([f.pdf(x) for f in pdfs])
+    coord = fmin(f_combination, x0, full_output=False, disp=False, retall=False)
     score = pdfs[0].pdf(coord)
     return (coord, score)
