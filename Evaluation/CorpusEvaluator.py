@@ -149,7 +149,7 @@ class CorpusEvaluator:
             fandw.append((functions[i], weights[i]))
 
         if len(functions) > 0:
-            ((lon_score, lat_score), score) = EvaluationFunctions.get_combinations(fandw, x0)
+            ((lon_score, lat_score), score) = EvaluationFunctions.get_weighted_combinations(fandw, x0)
         else: 
             return None
 
