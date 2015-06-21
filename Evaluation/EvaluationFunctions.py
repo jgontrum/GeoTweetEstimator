@@ -177,7 +177,7 @@ def get_combinations(means, sigmas, x0):
     pdfs = []
     for i in range(len(means)):
         try:
-            pdfs.append(multivariate_normal(mean=means[i], cov=sigmas[i]))
+            pdfs.append(multivariate_normal(mean=means[i], cov=sigmas[i], allow_singular=True))
         except:
             continue
     f_combination = lambda x: -1* sum([f.pdf(x) for f in pdfs])

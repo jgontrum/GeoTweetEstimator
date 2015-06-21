@@ -119,7 +119,6 @@ class CorpusEvaluator:
                     text_pos -= 42000
                     current_color = EvaluationFunctions.getColorForValue(variance)
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.7)
-
                 token_data_here.append((token, variance, count, data["location"], data["mean"], data["covariance"]))
 
             else:
@@ -148,21 +147,29 @@ class CorpusEvaluator:
         means = []
         sigmas = []
         functions = []
+        tokens = []
         loc = []
+        variances = []
         for (token, variance, count, coordinates, mean, covar) in token_data_here:
             x0 += mean
             means.append(mean)
             sigmas.append(covar)
+             
             try:
-                functions.append(multivariate_normal(mean=mean, cov=covar))
-            except:
+                functions.append(multivariate_normal(mean=mean, cov=covar,allow_singular=True))
+            except Exception, e:
+                print e
                 continue
+            tokens.append(token)
+            variances.append(variance)
             loc.append(coordinates)
 
         x0 /= len(token_data_here)
-
-        ((lon_score, lat_score), score) = EvaluationFunctions.get_combinations(means, sigmas, x0)
-
+        
+        if len(functions) > 0:
+            ((lon_score, lat_score), score) = EvaluationFunctions.get_combinations(means, sigmas, x0)
+        else: 
+            return None
         distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
 
         if self.draw:
@@ -174,7 +181,7 @@ class CorpusEvaluator:
             plt.savefig('img/tweet_' + str(self.variance_threshold) + "_" + str(self.i) + ".png", format='png')
             plt.clf()
         
-        #pickle.dump((functions,loc, location, x0, (lon_score, lat_score), distance,score), open("tweet_" + str(self.i) + ".pickle", "wb"))
+        #pickle.dump((functions,loc, location, x0, (lon_score, lat_score), distance,score,tokens,variances), open("tweet_" + str(self.i) + "_" + str(self.variance_threshold) +".pickle", "wb"))
 
         return (lon_score, lat_score, location[0], location[1], distance)
 

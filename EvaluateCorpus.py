@@ -42,15 +42,19 @@ n = len(variance_data)
 dev_corpus = CorpusEvaluator.CorpusEvaluator(signature=signature, clusters=clusters, corpus='DEV')
 dev_corpus.setDistanceThreshold(200)
 
+
+print n
 # Load the evaluator:
 evaluator = Weighting.InversedVarianceEvaluator();
 dev_corpus.setEvaluator(evaluator)
 
+
 # Now run with different variance thresholds!
-thresholds = [ variance_data[int(n * 1)],
-               variance_data[int(n * 0.75)],
-               variance_data[int(n * 0.5)],
-               variance_data[int(len(n * 0.25))]]
+thresholds = [ 100]
+#variance_data[int(n * 1)-1],
+#variance_data[int(n * 0.75)],
+#variance_data[int(n * 0.5)],
+#variance_data[int(n * 0.25)]]
 for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
     print ""

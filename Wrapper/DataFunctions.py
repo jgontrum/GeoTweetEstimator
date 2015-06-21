@@ -10,6 +10,7 @@ import cPickle as pickle
 import base64
 from sklearn.cluster import KMeans
 from Evaluation import EvaluationFunctions
+from scipy.stats import multivariate_normal
 import unicodecsv
 import gzip
 import gc
@@ -20,20 +21,6 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
     signature = Signature.Signature()
     # Make connection
     database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TRAIN")
-    database2 = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TEST")
-    database3 = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="DEV")
-
-    good_tokens = []
-    for tokens in database2.getRows("`tokenised_low`"):
-        for token in EvaluationFunctions.getCoOccurrences(tokens[0].split()):
-            good_tokens.append(token)
-    for tokens in database3.getRows("`tokenised_low`"):
-        for token in EvaluationFunctions.getCoOccurrences(tokens[0].split()):
-            good_tokens.append(token)
-
-    good_tokens = set(good_tokens)
-
-    print len(good_tokens)
     # Iterate over all tweets and split the tokenised texts.
     # Each token maps to a list of lon, lat tuples
     token_distribution_cart = {}
@@ -46,7 +33,8 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
     
     pickle.dump(signature, open(filenamesig, 'wb'))
     
-    csvfile = gzip.open(filenamecsv + ".gz", "wb")
+    #csvfile = gzip.open(filenamecsv + ".gz", "wb")
+    csvfile = open(filenamecsv , "wb")
     writer = unicodecsv.writer(csvfile, delimiter=',', quotechar='"',escapechar='\\', quoting=unicodecsv.QUOTE_ALL, encoding='utf-8')
     for token, coordinates_of_tuple in token_distribution_cart.iteritems():
         count = len(coordinates_of_tuple)
@@ -69,20 +57,25 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
 
             # Calculate the variance
             variance = variance_num / count
-            covariance = np.cov(np_list.T)
-            print covariance.shape, covariance.dtype
+            np_list = np_list.T
+            covariance = np.cov(np_list)
+            v = None
+            try:
+                v = multivariate_normal(mean=mean, cov=covariance,allow_singular=True)
+            except Exception, e:
+                print e
+                print covariance.shape, covariance.dtype
+                print np_list.shape, np_list.dtype
+                print count
+                continue
+
             writer.writerow([
                 tokenID,"|".join(list(token)),
                 median_lng,
                 median_lat,
                 variance,
                 count,
-                mean_lng,
-                mean_lat,
-                covariance[0][0],
-                covariance[0][1],
-                covariance[1][0],
-                covariance[1][1],
+                base64.b64encode(pickle.dumps(v))
             ])
             del covariance
             del variance
