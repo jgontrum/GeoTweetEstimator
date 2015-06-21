@@ -184,3 +184,9 @@ def get_combinations(means, sigmas, x0):
     coord = fmin(f_combination, x0, full_output=False, disp=False, retall=False)
     score = pdfs[0].pdf(coord)
     return (coord, score)
+
+def get_combinations(fs, x0):
+    f_combination = lambda x: -1* sum([f.pdf(x) for f in fs])
+    coord = fmin(f_combination, x0, full_output=False, disp=False, retall=False)
+    score = fs[0].pdf(coord)
+    return (coord, score)

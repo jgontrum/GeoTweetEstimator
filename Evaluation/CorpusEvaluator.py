@@ -9,6 +9,7 @@ from Wrapper import MapFunctions
 import matplotlib.pyplot as plt
 from Evaluation import EvaluationFunctions
 import cPickle as pickle
+import base64
 from random import randint
 from tabulate import tabulate
 import numpy as np
@@ -55,21 +56,15 @@ class CorpusEvaluator:
 
         # Get data from database
         token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
-        for token_id, lon, lat, variance, count, \
-            mean_lng, mean_lat, \
-            covarA0, covarA1, \
-            covarB0, covarB1 \
+        for token_id, lon, lat, variance, count, b64function \
             in token_db.getTokenInfo(ids, columns= \
-            "`id`, `long`, `lat`, `variance`, `count`, `mean_lng`, `mean_lat`, `covarA0`, `covarA1`, `covarB0`, `covarB1`"):
+            "`id`, `long`, `lat`, `variance`, `count`, `function`"):
 
-                    covar_matrix = np.matrix([[covarA0, covarA1],[covarB0, covarB1]])
-                    #covar_matrix = m.dot(m.T)
-                    mean = np.asarray([mean_lng, mean_lat])
+                    function = pickle.loads(base64.b64decode(b64function))
                     self.token_data[token_id] = {"location" : (lon, lat),
                                            "variance" : variance,
                                            "count" : count,
-                                           "mean" : mean,
-                                           "covariance" : covar_matrix}
+                                           "function" : function}
         # Combine all user tweets
         # for user, tweets in user_to_tweets.iteritems():
         #     tokens = []
@@ -119,7 +114,7 @@ class CorpusEvaluator:
                     text_pos -= 42000
                     current_color = EvaluationFunctions.getColorForValue(variance)
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.7)
-                token_data_here.append((token, variance, count, data["location"], data["mean"], data["covariance"]))
+                token_data_here.append((token, variance, count, data["location"], data["function"]))
 
             else:
                 if self.draw:
@@ -143,33 +138,22 @@ class CorpusEvaluator:
         #     print "---"
 
         # Find initial guess by estimating a midpoint
-        x0 = np.array([0,0])
-        means = []
-        sigmas = []
+        x0 = np.array([51,10])
         functions = []
         tokens = []
         loc = []
         variances = []
-        for (token, variance, count, coordinates, mean, covar) in token_data_here:
-            x0 += mean
-            means.append(mean)
-            sigmas.append(covar)
-             
-            try:
-                functions.append(multivariate_normal(mean=mean, cov=covar,allow_singular=True))
-            except Exception, e:
-                print e
-                continue
+        for (token, variance, count, coordinates, function) in token_data_here:
+            functions.append(function)
             tokens.append(token)
             variances.append(variance)
             loc.append(coordinates)
 
-        x0 /= len(token_data_here)
-        
         if len(functions) > 0:
-            ((lon_score, lat_score), score) = EvaluationFunctions.get_combinations(means, sigmas, x0)
+            ((lon_score, lat_score), score) = EvaluationFunctions.get_combinations(functions, x0)
         else: 
             return None
+        
         distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
 
         if self.draw:
