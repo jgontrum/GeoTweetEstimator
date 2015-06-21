@@ -127,33 +127,32 @@ class CorpusEvaluator:
             plt.clf()
             return None
 
-        # mcvlist = [(mean, covar, token) for (token, variance, count, coordinates, mean, covar) in token_data_here ]
-        # for (mean1, covar1, token1), (mean2, covar2, token2) in itertools.combinations(mcvlist, 2):
-        #     # get x0:
-        #     x0 = (mean1 + mean2) / 2
-        #     print token1, token2
-        #     print mean1
-        #     print mean2
-        #     print EvaluationFunctions.get_crossing(mean1, covar1, mean2, covar2,x0)
-        #     print "---"
-
         # Find initial guess by estimating a midpoint
         x0 = np.array([51,10])
         functions = []
         tokens = []
         loc = []
         variances = []
+        token_data_for_weighting = []
         for (token, variance, count, coordinates, function) in token_data_here:
+            token_data_for_weighting.append((token, variance, coordinates, coordinates))
             functions.append(function)
             tokens.append(token)
             variances.append(variance)
             loc.append(coordinates)
 
+        (c_list, weights) = self.evaluator.evaluate(token_data_for_weighting)
+        assert len(weights) == len(functions)
+
+        fandw = []
+        for i in range(len(weights)):
+            fandw.append((functions[i], weights[i]))
+
         if len(functions) > 0:
-            ((lon_score, lat_score), score) = EvaluationFunctions.get_combinations(functions, x0)
+            ((lon_score, lat_score), score) = EvaluationFunctions.get_combinations(fandw, x0)
         else: 
             return None
-        
+
         distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
 
         if self.draw:

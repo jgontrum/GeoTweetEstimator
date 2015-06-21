@@ -190,3 +190,9 @@ def get_combinations(fs, x0):
     coord = fmin(f_combination, x0, full_output=False, disp=False, retall=False)
     score = fs[0].pdf(coord)
     return (coord, score)
+
+def get_weighted_combinations(fandw, x0):
+    f_combination = lambda x: -1* sum([w * f.pdf(x) for (f,w) in fandw])
+    coord = fmin(f_combination, x0, full_output=False, disp=False, retall=False)
+    score = fandw[0][0].pdf(coord)
+    return (coord, score)
