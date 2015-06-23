@@ -52,6 +52,15 @@ class MySQLConnectionWrapper:
 
         self.dbTable = config.get('MySQL', 'mySQLTablePrefix') + "_" + corpus
 
+    def getTokenInfo(self,ids, columns="*"):
+        if ids is not None:
+            id_str = ",".join([str(x) for x in ids])
+            self.readCursor.execute('SELECT ' + columns + ' FROM ' + self.dbTable + ' WHERE `id` IN (' + id_str + ')')
+            return self.readCursor
+        else:
+            self.readCursor.execute('SELECT ' + columns + ' FROM ' + self.dbTable)
+            return self.readCursor
+
     def getRows(self, columns="*"):
         """ Read MySQL database in chunks """
         self.readCursor.execute('SELECT ' + columns + ' FROM ' + self.dbTable)
