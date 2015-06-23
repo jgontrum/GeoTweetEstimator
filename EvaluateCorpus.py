@@ -36,7 +36,7 @@ token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", cor
 variances_x = []
 variances_y = []
 variances_z = []
-for varx, vary, varz in token_db.getTokenInfo(ids=None, columns="`variance_x, variance_y, variance_z`"):
+for varx, vary, varz in token_db.getTokenInfo(ids=None, columns="`variance_x`, `variance_y`, `variance_z`"):
     variances_x.append(varx)
     variances_y.append(vary)
     variances_z.append(varz)
