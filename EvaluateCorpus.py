@@ -50,11 +50,7 @@ dev_corpus.setEvaluator(evaluator)
 
 
 # Now run with different variance thresholds!
-thresholds = [ 100]
-#variance_data[int(n * 1)-1],
-#variance_data[int(n * 0.75)],
-#variance_data[int(n * 0.5)],
-#variance_data[int(n * 0.25)]]
+thresholds = [ variance_data[int(n * 1)-1], variance_data[int(n * 0.75)], variance_data[int(n * 0.5)], variance_data[int(n * 0.25)]]
 for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
     print ""
