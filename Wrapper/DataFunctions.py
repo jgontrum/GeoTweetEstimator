@@ -15,7 +15,7 @@ import unicodecsv
 import gzip
 import gc
 
-def mysqlTrainingCorpus(filenamecsv, filenamesig):
+def mysqlTrainingCorpus_lat(filenamecsv, filenamesig):
     log = open("log.txt", "w")
     COUNT_THRESHOLD = 2
     signature = Signature.Signature()
@@ -85,6 +85,79 @@ def mysqlTrainingCorpus(filenamecsv, filenamesig):
                 gc.collect()
 
     log.close()
+    csvfile.close()
+    return tweet_coordinates
+
+def mysqlTrainingCorpus_xyz(filenamecsv, filenamesig):
+    COUNT_THRESHOLD = 2
+    signature = Signature.Signature()
+    # Make connection
+    database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TRAIN")
+    # Iterate over all tweets and split the tokenised texts.
+    # Each token maps to a list of lon, lat tuples
+    token_distribution_cart = {}
+    tweet_coordinates = []
+    for tokens, lat, lon in database.getRows("`tokenised_low`, `lat`, `long`"):
+        tweet_coordinates.append((lon, lat))
+        cartesian = EvaluationFunctions.convertLatLongToCartesian(lon, lat)
+        for token in EvaluationFunctions.getCoOccurrences(tokens.split()):
+            token_distribution_cart.setdefault(token, []).append(cartesian)
+
+
+    pickle.dump(signature, open(filenamesig, 'wb'))
+
+    csvfile = open(filenamecsv , "wb")
+    writer = unicodecsv.writer(csvfile, delimiter=',', quotechar='"',escapechar='\\', quoting=unicodecsv.QUOTE_ALL, encoding='utf-8')
+
+    for token, coordinates_of_tuple in token_distribution_cart.iteritems():
+        count = len(coordinates_of_tuple)
+        if count > COUNT_THRESHOLD:
+            tokenID = signature.add(token)
+            # Convert coordinate list to numpy array
+            np_list = np.asarray(coordinates_of_tuple, dtype=float)
+
+            # Calculate the mean values for
+            mean = tuple(np.mean(np_list, axis=0))
+            (mean_x, mean_y, mean_z) = mean
+
+            (median_x, median_y, median_z) = tuple(np.median(np_list, axis=0))
+
+            variance = np.var(np_list, dtype=np.float64)
+            variance_x = np.var(np_list, axis=0, dtype=np.float64)
+            variance_y = np.var(np_list, axis=1, dtype=np.float64)
+            variance_z = np.var(np_list, axis=2, dtype=np.float64)
+
+            np_list = np_list.T
+            covariance = np.cov(np_list)
+            v = None
+            try:
+                v = multivariate_normal(mean=mean, cov=covariance,allow_singular=True)
+            except Exception, e:
+                print e
+                print covariance.shape, covariance.dtype
+                print np_list.shape, np_list.dtype
+                print count
+                continue
+
+            writer.writerow([
+                tokenID,"|".join(list(token)),
+                median_x,
+                median_y,
+                median_z,
+                variance,
+                variance_x,
+                variance_y,
+                variance_z,
+                count,
+                base64.b64encode(pickle.dumps(v))
+            ])
+            del covariance
+            del variance
+            del mean
+            del np_list
+            if count > 10000:
+                gc.collect()
+
     csvfile.close()
     return tweet_coordinates
 

@@ -22,8 +22,8 @@ if len(sys.argv) < 3:
     print "1. path for tokendata 2 path for signature ( 3. path for clusters)"
     sys.exit(1)
 
-if len(sys.argv) == 2: # create only the tokendata
-    token_to_data = DataFunctions.mysqlTrainingCorpus(sys.argv[1], sys.argv[2])
+if len(sys.argv) == 3: # create only the tokendata
+    token_to_data = DataFunctions.mysqlTrainingCorpus_xyz(sys.argv[1], sys.argv[2])
 else:
-    token_to_data = DataFunctions.mysqlTrainingCorpus(sys.argv[1], sys.argv[2])
+    token_to_data = DataFunctions.mysqlTrainingCorpus_xyz(sys.argv[1], sys.argv[2])
     clusters = DataFunctions.pickleClusters(sys.argv[3], token_to_data, 7)
