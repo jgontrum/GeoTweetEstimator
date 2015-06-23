@@ -65,6 +65,31 @@ class InversedVarianceEvaluator():
     def __str__(self):
         return "Inversed variance (1/variance) Evaluator with weight for variance==0: " + str(self.zerovariance)
 
+class InversedVarianceEvaluatorXYZ():
+    def __init__(self, zerovariance = float(math.pow(1,6))):
+        self.zerovariance = zerovariance
+
+    def evaluate(self, token_data):
+        # token_data = list of tupels (token, variance, count, median, variances) in linear order
+        coordinate_list = []
+        weight_list = []
+
+        for token, variance, count, median, variances in token_data:
+            coordinate_list.append(median)
+            w_here = []
+            for i in range(3):
+                variance = variances[i]
+                if variance == 0:
+                    w_here.append(self.zerovariance)
+                else:
+                    w_here.append(1.0/variance)
+            weight_list.append(tuple(w_here))
+
+        return (coordinate_list, weight_list)
+
+    def __str__(self):
+        return "Inversed variance (1/variance) Evaluator with weight for variance==0: " + str(self.zerovariance)
+
 class NegLogVarianceEvaluator():
     def __init__(self, zerovariance = float(math.pow(1,6))):
         self.zerovariance = zerovariance

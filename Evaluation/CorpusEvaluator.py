@@ -11,19 +11,23 @@ from random import randint
 from tabulate import tabulate
 import numpy as np
 import math
+import cPickle as pickle
+import base64
 
 class CorpusEvaluator:
-    def __init__(self, corpus='DEV'):
+    def __init__(self, signature=None, clusters=None, corpus='DEV'):
         self.tweets = []        # list of tokenised tweets
         self.location = []      # list of lat, lan tuples
         self.n = 0              # The size of the corpus
-        self.token_data = None  # Token data from pickleTrainingCorpus()
         self.clusters = None    # List of centroid coordinates
         self.variance_threshold = 0
         self.distance_threshold = 0
         self.draw = False       # Toggle weather each tweet should be saved to a PNG file
         self.evaluator = None   # Creates the weights for the tokens in a tweet
         self.null = False       # Test 0-hypothesis
+        self.signature = signature
+        self.clusters = clusters
+        self.users = []
 
         # Load corpus from database:
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
@@ -34,10 +38,35 @@ class CorpusEvaluator:
         self.n = len(self.tweets)
         assert len(self.tweets) == len(self.location)
 
-    def setData(self, data, clusters, null=False):
-        self.token_data = data
-        self.clusters = clusters
-        self.null = null
+        # Lookup tokendata
+        self.token_data = {}
+
+        # collect ids
+        ids = []
+        for tweet in self.tweets:
+            for token in EvaluationFunctions.getCoOccurrences(tweet):
+                ids.append(signature.add(token))
+        ids = set(ids)
+
+        # Get data from database
+        token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
+        for token_id, medianx, mediany, medianz, variance, variancex, variancey, variancez, count \
+            in token_db.getTokenInfo(ids, columns= \
+            "`id`, `median_x`, `median_y`, `median_z`, `variance`, `variance_x`, `variance_y`, `variance_z`, `count`"):
+
+                    self.token_data[token_id] = {
+                        "median" : (medianx, mediany, medianz),
+                        "variance" : variance,
+                        "count" : count,
+                        "variances" : (variancex, variancey, variancez)}
+        # Combine all user tweets
+        # for user, tweets in user_to_tweets.iteritems():
+        #     tokens = []
+        #     for t in tweets:
+        #         tokens += t
+        #     for i in range(self.n):
+        #         if self.users[i] == user:
+        #             self.tweets[i] = tokens
 
     def setEvaluator(self, evaluator):
         self.evaluator = evaluator
@@ -47,6 +76,11 @@ class CorpusEvaluator:
 
     def setDistanceThreshold(self, threshold):
         self.distance_threshold = threshold
+
+    def checkVarianceThreshold(self, id):
+        (x,y,z) = self.token_data[id]['variances']
+        (tx,ty,tz) = self.variance_threshold
+        return x < tx and y < ty and z < tz
 
     # Takes a list of tokens and a location.
     # Calculates the position of the tweet and compares it to the actual
@@ -62,17 +96,18 @@ class CorpusEvaluator:
         
         # Look up the data for each token in the tweet
         for token in EvaluationFunctions.getCoOccurrences(tokens):
-
+            token_id =  self.signature.add(token)
             if token not in self.token_data:
                 if False: #self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | (fail)', color='grey', fontsize=6)
                     text_pos -= 42000
                 continue
 
-            coordinates, variance, count = self.token_data[token]
-            lon, lat = coordinates
-            print token, variance
-            if variance < self.variance_threshold:
+            data = self.token_data[token_id]
+            variance = data['variance']
+            count = data['count']
+            lon, lat = data["location"]
+            if self.checkVarianceThreshold(token_id):
                 valid += 1
                 # 0-hypothese
                 if self.null:
@@ -85,7 +120,7 @@ class CorpusEvaluator:
                     current_color = EvaluationFunctions.getColorForValue(variance)
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.7)
 
-                token_data_here.append((token, variance, count, coordinates))
+                token_data_here.append((token, variance, count, data["median"], data["variances"]))
 
             else:
                 if self.draw:
@@ -97,11 +132,13 @@ class CorpusEvaluator:
         if valid == 0:
             plt.clf()
             return None
+
+
         # Generate the data for the weighted midpoint
         coordinate_list, weight_list = self.evaluator.evaluate(token_data_here)
 
         # Calculate the midpoint
-        lon_score, lat_score = EvaluationFunctions.getWeightedMidpoint(coordinate_list, weight_list)
+        lon_score, lat_score = EvaluationFunctions.getWeightedMidpointXYZ(coordinate_list, weight_list)
 
         distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
         
@@ -138,8 +175,7 @@ class CorpusEvaluator:
         for i in range(n):
             real_to_calc_matches[i][0] = i
 
-       # self.n = 3
-        for self.i in [93]: #range(0,self.n):
+        for self.i in range(0,self.n):
             values = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
             if values is None:
                 invalids += 1

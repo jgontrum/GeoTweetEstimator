@@ -100,6 +100,28 @@ def getWeightedMidpoint(coordinates, weights):
     return ret
 
 
+
+def getWeightedMidpointXYZ(coordinates, weights):
+    assert len(coordinates) == len(weights)
+    x_sum = 0
+    y_sum = 0
+    z_sum = 0
+    weight_sumx = 0
+    weight_sumy = 0
+    weight_sumz = 0
+    for i in range(len(coordinates)):
+        weight = weights[i]
+        x,y,z = coordinates[i]
+        x_sum = x_sum + (x * weight[0])
+        y_sum = y_sum + (y * weight[1])
+        z_sum = z_sum + (z * weight[2])
+        weight_sumx += weight[0]
+        weight_sumy += weight[1]
+        weight_sumz += weight[2]
+
+    ret =  convertCartesianToLatLong(x_sum / weight_sumx, y_sum / weight_sumy, z_sum / weight_sumz)
+    return ret
+
 def getCluster(lon, lat, clusters):
     lowest_value = float('inf')
     lowest_cluster = -1

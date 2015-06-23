@@ -6,6 +6,8 @@ import sys
 from Evaluation import CorpusEvaluator
 import cPickle as pickle
 from Evaluation import Weighting
+from Wrapper import MySQLConnection
+import os
 
 """
 Evaluate the corpus. This is where the results are generated ;)
@@ -20,29 +22,51 @@ python EvaluateCorpus.py TokenData.pickle ClusterData.pickle
                      its variance.
 """
 
+
 load_pickled = None
 if len(sys.argv) <= 2:
     print "1. TokenData, 2. ClusterData"
     sys.exit(1)
 
 """ LOAD DATA """
-token_to_data = pickle.load(open(sys.argv[1], 'rb')) #< ((lon, lat), variance, count)
+signature = pickle.load(open(sys.argv[1], 'rb'))
 clusters = pickle.load(open(sys.argv[2], 'rb')) #<
 
+token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
+variances_x = []
+variances_y = []
+variances_z = []
+for varx, vary, varz in token_db.getTokenInfo(ids=None, columns="`variance_x, variance_y, variance_z`"):
+    variances_x.append(varx)
+    variances_y.append(vary)
+    variances_z.append(varz)
 
-variance_data = list(sorted([var for (x, var, y) in token_to_data.values()]))
+variances_x = list(sorted(variances_x))
+variances_y = list(sorted(variances_y))
+variances_z = list(sorted(variances_z))
+
+n = len(variances_x)
+
+def getThreshold(t):
+    pos = int(n * t)
+    if t == 1:
+        pos += 1
+    x = variances_x[pos]
+    y = variances_y[pos]
+    z = variances_z[pos]
 
 """ EVALUATE """
-dev_corpus = CorpusEvaluator.CorpusEvaluator(corpus='DEV')
-dev_corpus.setData(token_to_data, clusters, null=False)
+dev_corpus = CorpusEvaluator.CorpusEvaluator(signature=signature, clusters=clusters, corpus='DEV')
 dev_corpus.setDistanceThreshold(200)
 
+
+print n
 # Load the evaluator:
-evaluator = Weighting.InversedVarianceEvaluator();
+evaluator = Weighting.InversedVarianceEvaluatorXYZ();
 dev_corpus.setEvaluator(evaluator)
 
 # Now run with different variance thresholds!
-thresholds = [ variance_data[int(len(variance_data) * 0.32)], variance_data[int(len(variance_data) * 0.31)], variance_data[int(len(variance_data) * 0.30)]]#, 1, 0.0017138, 0.0014019, 0.000594, 0.0003886 ] #1, 0.0017138, 0.0014019, 0.000594,
+thresholds = [ getThreshold(1),getThreshold(0.75), getThreshold(0.5), getThreshold(0.25)]
 for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
     print ""
