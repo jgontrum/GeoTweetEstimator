@@ -75,10 +75,10 @@ for i in range (1,100):
 c = 1
 for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
-    dev_corpus.createFallback()
+    #dev_corpus.createFallback()
     #print ""
     #print threshold
     #print dev_corpus.evaluateCorpus(printmsg=True)
-    mean, med, ratio = dev_corpus.evaluateCorpus()
-    print c , ",", mean , ",", med, ",", ratio
+    mean, med, valid = dev_corpus.evaluateCorpus()
+    print c , ",", mean , ",", med, ",", valid
     c+=1

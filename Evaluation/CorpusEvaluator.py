@@ -29,7 +29,7 @@ class CorpusEvaluator:
         self.signature = signature
         self.clusters = clusters
         self.users = []
-        self.fallback = []
+        self.fallback = {}
 
         # Load corpus from database:
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
@@ -37,7 +37,7 @@ class CorpusEvaluator:
 
         for tokens, lat, lon, user in database.getRows("`tokenised_low`, `lat`, `long`, `user_id`"):
             self.tweets.append(tokens.split())
-            self.users .append(user)
+            self.users.append(user)
             self.user_to_tweets.setdefault(user, []).append(tokens.split())
             self.location.append((lon, lat))
         self.n = len(self.tweets)
@@ -75,15 +75,16 @@ class CorpusEvaluator:
         self.distance_threshold = threshold
 
     def createFallback(self):
-        # create fall-back tokens for all users
+       # create fall-back tokens for all users
         for user, tweets in self.user_to_tweets.iteritems():
             tid_to_count = {}
             for tweet in tweets:
                 for token in EvaluationFunctions.getCoOccurrences(tweet):
                     tid = self.signature.add(token)
-                    if self.checkVarianceThreshold(tid):
-                        tid.setdefault(tid,0)
-                        tid_to_count[tid] += 1
+                    if tid in self.token_data:
+                        if self.checkVarianceThreshold(tid):
+                            tid_to_count.setdefault(tid,0)
+                            tid_to_count[tid] += 1
 
             amount = 5
             if len(tid_to_count) < amount:
@@ -96,10 +97,7 @@ class CorpusEvaluator:
                 count = data['count']
                 token_data.append((self.signature.get(tid), variance, count, data["median"], data["variances"]))
 
-            for i in range(self.n):
-                if self.users[i] == user:
-                    self.fallback[i] = token_data
-
+            self.fallback[user] = token_data
     def checkVarianceThreshold(self, tid):
             (x,y,z) = self.token_data[tid]['variances']
             (tx,ty,tz) = self.variance_threshold
@@ -156,9 +154,15 @@ class CorpusEvaluator:
 
         if valid == 0:
             # use fallback
-            token_data_here = self.fallback[user]
-            #plt.clf()
-            #return None
+            #if user in self.fallback:
+            #    token_data_here = self.fallback[user]
+            #else:
+            #    print user , " not in " , self.fallback.keys()
+            if len(token_data_here) == 0:
+                plt.clf()
+                return None
+            #else:
+            #    print "!"
 
 
         # Generate the data for the weighted midpoint
@@ -238,9 +242,11 @@ class CorpusEvaluator:
         #print tabulate(real_to_calc_matches, tablefmt="latex",headers=range(n))
         
         #print tabulate(EvaluationFunctions.transformStatistice(real_to_calc_matches), tablefmt="latex",headers=range(n))
-
+        
+        valid_ratio = valids / float(valids + invalids)
+        valid_ratio = valids
         if valids > 0:
-            return  (np.mean(distances_np), np.median(distances_np), float(cluster_matches) / (cluster_matches + cluster_mismatches))
+            return  (np.mean(distances_np), np.median(distances_np), valid_ratio)
         else:
-            return  (float('inf'), float('inf'), float('inf'))
+            return  (float('inf'), float('inf'), valid_ratio)
 
