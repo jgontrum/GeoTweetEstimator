@@ -13,6 +13,7 @@ import numpy as np
 import math
 import cPickle as pickle
 import base64
+from operator import itemgetter
 
 class CorpusEvaluator:
     def __init__(self, signature=None, clusters=None, corpus='DEV'):
@@ -28,12 +29,16 @@ class CorpusEvaluator:
         self.signature = signature
         self.clusters = clusters
         self.users = []
+        self.fallback = []
 
         # Load corpus from database:
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
+        user_to_tweets = {}
 
         for tokens, lat, lon, user in database.getRows("`tokenised_low`, `lat`, `long`, `user_id`"):
             self.tweets.append(tokens.split())
+            self.users .append(user)
+            user_to_tweets.setdefault(user, []).append(tokens.split())
             self.location.append((lon, lat))
         self.n = len(self.tweets)
         assert len(self.tweets) == len(self.location)
@@ -58,14 +63,29 @@ class CorpusEvaluator:
                         "variance" : variance,
                         "count" : count,
                         "variances" : (variancex, variancey, variancez)}
-        # Combine all user tweets
-        # for user, tweets in user_to_tweets.iteritems():
-        #     tokens = []
-        #     for t in tweets:
-        #         tokens += t
-        #     for i in range(self.n):
-        #         if self.users[i] == user:
-        #             self.tweets[i] = tokens
+        # create fall-back tokens for all users
+        for user, tweets in user_to_tweets.iteritems():
+            tid_to_count = {}
+            for token in EvaluationFunctions.getCoOccurrences(tweet):
+                tid = signature.add(token)
+                if self.checkVarianceThreshold(tid):
+                    tid.setdefault(tid,0)
+                    tid_to_count[tid] += 1
+
+            amount = 5
+            if len(tid_to_count) < amount:
+                amount = len(tid_to_count)
+
+            token_data = []
+            for tid, count in sorted(tid_to_count.iteritems(), key=itemgetter(1), reverse=True)[:amount]:
+                data = self.token_data[tid]
+                variance = data['variance']
+                count = data['count']
+                token_data.append((signature.get(tid), variance, count, data["median"], data["variances"]))
+
+            for i in range(self.n):
+                if self.users[i] == user:
+                    self.fallback[i] = token_data
 
     def setEvaluator(self, evaluator):
         self.evaluator = evaluator
@@ -84,7 +104,7 @@ class CorpusEvaluator:
     # Takes a list of tokens and a location.
     # Calculates the position of the tweet and compares it to the actual
     # position.
-    def evaluateTweet(self, tokens, location):
+    def evaluateTweet(self, tokens, location, user):
         token_data_here = []
 
         valid = 0
@@ -106,6 +126,8 @@ class CorpusEvaluator:
             data = self.token_data[token_id]
             variance = data['variance']
             count = data['count']
+            x,y,z = data["median"]
+            lon, lat = EvaluationFunctions.convertCartesianToLatLong(x,y,z)
             if self.checkVarianceThreshold(token_id):
                 valid += 1
                 # 0-hypothese
@@ -129,8 +151,10 @@ class CorpusEvaluator:
                     basemap.plot(lon, lat, 'o', latlon=True, markeredgecolor=current_color, color=current_color, markersize=EvaluationFunctions.getSizeForValue(count), alpha=0.1)
 
         if valid == 0:
-            plt.clf()
-            return None
+            # use fallback
+            token_data_here = self.fallback[user]
+            #plt.clf()
+            #return None
 
 
         # Generate the data for the weighted midpoint
@@ -175,7 +199,7 @@ class CorpusEvaluator:
             real_to_calc_matches[i][0] = i
 
         for self.i in range(0,self.n):
-            values = self.evaluateTweet(self.tweets[self.i], self.location[self.i])
+            values = self.evaluateTweet(self.tweets[self.i], self.location[self.i], self.users[self.i])
             if values is None:
                 invalids += 1
             else:
