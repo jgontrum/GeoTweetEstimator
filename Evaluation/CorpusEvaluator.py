@@ -45,15 +45,14 @@ class CorpusEvaluator:
         ids = []
         for tweet in self.tweets:
             for token in EvaluationFunctions.getCoOccurrences(tweet):
-                ids.append(signature.add(token))
+                i = signature.add(token) 
+                ids.append(i)
         ids = set(ids)
-
         # Get data from database
         token_db = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus="TOKENDATA")
         for token_id, medianx, mediany, medianz, variance, variancex, variancey, variancez, count \
             in token_db.getTokenInfo(ids, columns= \
             "`id`, `median_x`, `median_y`, `median_z`, `variance`, `variance_x`, `variance_y`, `variance_z`, `count`"):
-
                     self.token_data[token_id] = {
                         "median" : (medianx, mediany, medianz),
                         "variance" : variance,
@@ -77,10 +76,10 @@ class CorpusEvaluator:
     def setDistanceThreshold(self, threshold):
         self.distance_threshold = threshold
 
-    def checkVarianceThreshold(self, id):
-        (x,y,z) = self.token_data[id]['variances']
-        (tx,ty,tz) = self.variance_threshold
-        return x < tx and y < ty and z < tz
+    def checkVarianceThreshold(self, tid):
+            (x,y,z) = self.token_data[tid]['variances']
+            (tx,ty,tz) = self.variance_threshold
+            return x < tx and y < ty and z < tz
 
     # Takes a list of tokens and a location.
     # Calculates the position of the tweet and compares it to the actual
@@ -93,11 +92,12 @@ class CorpusEvaluator:
             basemap = MapFunctions.prepareMap()
 
         text_pos = 1890000
-        
+       
+
         # Look up the data for each token in the tweet
         for token in EvaluationFunctions.getCoOccurrences(tokens):
             token_id =  self.signature.add(token)
-            if token not in self.token_data:
+            if token_id not in self.token_data:
                 if False: #self.draw:
                     plt.text(10000, text_pos, token.decode('utf8', 'ignore') + ' | (fail)', color='grey', fontsize=6)
                     text_pos -= 42000
@@ -106,7 +106,6 @@ class CorpusEvaluator:
             data = self.token_data[token_id]
             variance = data['variance']
             count = data['count']
-            lon, lat = data["location"]
             if self.checkVarianceThreshold(token_id):
                 valid += 1
                 # 0-hypothese
@@ -142,10 +141,10 @@ class CorpusEvaluator:
 
         distance = EvaluationFunctions.getDistance(lon_score, lat_score, location[0], location[1])
         
-        print " ".join(tokens)
-        print distance
-        print valid
-        print ""
+        #print " ".join(tokens)
+        #print distance
+        #print valid
+        #print ""
 
         if self.draw:
             basemap.plot(location[0], location[1], '^', mfc='none' , markeredgecolor='black', latlon=True, alpha=1)

@@ -50,25 +50,34 @@ n = len(variances_x)
 def getThreshold(t):
     pos = int(n * t)
     if t == 1:
-        pos += 1
+        pos -= 1
     x = variances_x[pos]
     y = variances_y[pos]
     z = variances_z[pos]
-
+    return (x,y,z)
 """ EVALUATE """
-dev_corpus = CorpusEvaluator.CorpusEvaluator(signature=signature, clusters=clusters, corpus='DEV')
+dev_corpus = CorpusEvaluator.CorpusEvaluator(signature=signature, clusters=clusters, corpus=sys.argv[3])
 dev_corpus.setDistanceThreshold(200)
 
 
-print n
 # Load the evaluator:
 evaluator = Weighting.InversedVarianceEvaluatorXYZ();
+
 dev_corpus.setEvaluator(evaluator)
 
 # Now run with different variance thresholds!
-thresholds = [ getThreshold(1),getThreshold(0.75), getThreshold(0.5), getThreshold(0.25)]
+thresholds =[]
+for i in range (1,100):
+    i += 1
+    l = i / 100.0
+    thresholds.append(getThreshold(l))
+#thresholds = [ getThreshold(1),getThreshold(0.75), getThreshold(0.4), getThreshold(0.3)]
+c = 1
 for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
-    print ""
-    print threshold
-    print dev_corpus.evaluateCorpus(printmsg=True)
+    #print ""
+    #print threshold
+    #print dev_corpus.evaluateCorpus(printmsg=True)
+    mean, med, ratio = dev_corpus.evaluateCorpus()
+    print c , ",", mean , ",", med, ",", ratio
+    c+=1
