@@ -75,6 +75,7 @@ for i in range (1,100):
 c = 1
 for threshold in thresholds:
     dev_corpus.setVarianceThreshold(threshold)
+    dev_corpus.createFallback()
     #print ""
     #print threshold
     #print dev_corpus.evaluateCorpus(printmsg=True)

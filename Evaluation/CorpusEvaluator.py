@@ -33,12 +33,12 @@ class CorpusEvaluator:
 
         # Load corpus from database:
         database = MySQLConnection.MySQLConnectionWrapper(basedir=os.getcwd() + "/", corpus=corpus)
-        user_to_tweets = {}
+        self.user_to_tweets = {}
 
         for tokens, lat, lon, user in database.getRows("`tokenised_low`, `lat`, `long`, `user_id`"):
             self.tweets.append(tokens.split())
             self.users .append(user)
-            user_to_tweets.setdefault(user, []).append(tokens.split())
+            self.user_to_tweets.setdefault(user, []).append(tokens.split())
             self.location.append((lon, lat))
         self.n = len(self.tweets)
         assert len(self.tweets) == len(self.location)
@@ -63,11 +63,23 @@ class CorpusEvaluator:
                         "variance" : variance,
                         "count" : count,
                         "variances" : (variancex, variancey, variancez)}
+
+
+    def setEvaluator(self, evaluator):
+        self.evaluator = evaluator
+
+    def setVarianceThreshold(self, threshold):
+        self.variance_threshold = threshold
+
+    def setDistanceThreshold(self, threshold):
+        self.distance_threshold = threshold
+
+    def createFallback(self):
         # create fall-back tokens for all users
-        for user, tweets in user_to_tweets.iteritems():
+        for user, tweets in self.user_to_tweets.iteritems():
             tid_to_count = {}
-            for token in EvaluationFunctions.getCoOccurrences(tweet):
-                tid = signature.add(token)
+            for token in EvaluationFunctions.getCoOccurrences(tweets):
+                tid = self.signature.add(token)
                 if self.checkVarianceThreshold(tid):
                     tid.setdefault(tid,0)
                     tid_to_count[tid] += 1
@@ -81,20 +93,11 @@ class CorpusEvaluator:
                 data = self.token_data[tid]
                 variance = data['variance']
                 count = data['count']
-                token_data.append((signature.get(tid), variance, count, data["median"], data["variances"]))
+                token_data.append((self.signature.get(tid), variance, count, data["median"], data["variances"]))
 
             for i in range(self.n):
                 if self.users[i] == user:
                     self.fallback[i] = token_data
-
-    def setEvaluator(self, evaluator):
-        self.evaluator = evaluator
-
-    def setVarianceThreshold(self, threshold):
-        self.variance_threshold = threshold
-
-    def setDistanceThreshold(self, threshold):
-        self.distance_threshold = threshold
 
     def checkVarianceThreshold(self, tid):
             (x,y,z) = self.token_data[tid]['variances']
