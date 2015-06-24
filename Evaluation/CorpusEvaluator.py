@@ -50,7 +50,7 @@ class CorpusEvaluator:
         ids = []
         for tweet in self.tweets:
             for token in EvaluationFunctions.getCoOccurrences(tweet):
-                i = signature.add(token) 
+                i = self.signature.add(token)
                 ids.append(i)
         ids = set(ids)
         # Get data from database
@@ -78,11 +78,12 @@ class CorpusEvaluator:
         # create fall-back tokens for all users
         for user, tweets in self.user_to_tweets.iteritems():
             tid_to_count = {}
-            for token in EvaluationFunctions.getCoOccurrences(tweets):
-                tid = self.signature.add(token)
-                if self.checkVarianceThreshold(tid):
-                    tid.setdefault(tid,0)
-                    tid_to_count[tid] += 1
+            for tweet in tweets:
+                for token in EvaluationFunctions.getCoOccurrences(tweet):
+                    tid = self.signature.add(token)
+                    if self.checkVarianceThreshold(tid):
+                        tid.setdefault(tid,0)
+                        tid_to_count[tid] += 1
 
             amount = 5
             if len(tid_to_count) < amount:
