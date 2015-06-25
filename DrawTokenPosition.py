@@ -64,15 +64,18 @@ def checkVarianceThreshold((x,y,z)):
 
 """ EVALUATE """
 # Sort by variance in the token data
-COUNT_THRESHOLD = sys.argv[3]
-VARIANCE_THRESHOLD = getThreshold(int(sys.argv[2]))
+for i in range (1,100):
+    i += 1
+    l = i / 100.0
+    COUNT_THRESHOLD = 10
+    VARIANCE_THRESHOLD = getThreshold(l)
 
-# Collect data
-for tid, (medx, medy, medz, vars, count) in token_to_data.iteritems():
-    if count < COUNT_THRESHOLD and checkVarianceThreshold(vars):
-        coordinates_to_draw.append(EvaluationFunctions.convertCartesianToLatLong(medx, medy, medz))
+    # Collect data
+    for tid, (medx, medy, medz, vars, count) in token_to_data.iteritems():
+        if count > COUNT_THRESHOLD and checkVarianceThreshold(vars):
+            coordinates_to_draw.append(EvaluationFunctions.convertCartesianToLatLong(medx, medy, medz))
 
-pickle.dump(coordinates_to_draw, open(sys.argv[1], 'wb'))
+    pickle.dump(coordinates_to_draw, open(sys.argv[1] + "_" + str(l) + ".pickle", 'wb'))
 #
 # # Draw coordinates to the map:
 # for lon, lat in coordinates_to_draw:
