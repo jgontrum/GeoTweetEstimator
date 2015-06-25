@@ -27,7 +27,7 @@ python PrepareData.py  OutputGraphic.png    [0.5             2]
 if len(sys.argv) != 4 :
     print "Specify the path for the corpus and the output path for the graph"
 
-basemap = MapFunctions.prepareMap() # print the positions here
+# basemap = MapFunctions.prepareMap() # print the positions here
 coordinates_to_draw = [] # Coordinates that will be drawn to the map
 
 # Define constants
@@ -65,15 +65,17 @@ def checkVarianceThreshold((x,y,z)):
 """ EVALUATE """
 # Sort by variance in the token data
 COUNT_THRESHOLD = sys.argv[3]
-VARIANCE_THRESHOLD = getThreshold(sys.argv[2])
+VARIANCE_THRESHOLD = getThreshold(int(sys.argv[2]))
 
 # Collect data
 for tid, (medx, medy, medz, vars, count) in token_to_data.iteritems():
     if count < COUNT_THRESHOLD and checkVarianceThreshold(vars):
         coordinates_to_draw.append(EvaluationFunctions.convertCartesianToLatLong(medx, medy, medz))
 
-# Draw coordinates to the map:
-for lon, lat in coordinates_to_draw:
-    basemap.plot(lon, lat, '.r', markeredgecolor='r', markersize=1,latlon=True)
-
-plt.savefig(sys.argv[1], format='png', bbox_inches='tight', dpi=900)
+pickle.dump(coordinates_to_draw, open(sys.argv[1], 'wb'))
+#
+# # Draw coordinates to the map:
+# for lon, lat in coordinates_to_draw:
+#     basemap.plot(lon, lat, '.r', markeredgecolor='r', markersize=1,latlon=True)
+#
+# plt.savefig(sys.argv[1], format='png', bbox_inches='tight', dpi=900)
