@@ -25,7 +25,7 @@ python EvaluateCorpus.py TokenData.pickle ClusterData.pickle
 
 load_pickled = None
 if len(sys.argv) <= 2:
-    print "1. TokenData, 2. ClusterData"
+    print "1. Signature, 2. ClusterData"
     sys.exit(1)
 
 """ LOAD DATA """
